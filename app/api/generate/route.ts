@@ -1,201 +1,159 @@
-import { NextResponse } from 'next/server';
-import OpenAI from 'openai';
-import { createClient } from '@supabase/supabase-js';
-import { Resend } from 'resend';
-import { calculateCost } from '@/lib/cost';
+// app/api/generate/route.ts
+// POST /api/generate
+// Body: { resume: string, deviceId: string, targetCompany?: string }
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-  baseURL: process.env.OPENAI_BASE_URL,
-});
+import { NextRequest, NextResponse } from 'next/server'
+import { getUsage, canGenerate, incrementUsage } from '@/lib/usage'
+import { sanitizeText, isValidDeviceId } from '@/lib/sanitize'
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
+export const runtime = 'nodejs'
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+function buildSystemPrompt(targetCompany: string): string {
+  const atsSection = targetCompany
+    ? `
+## Target Company / Industry
+The user is targeting: "${targetCompany}"
 
-const DAILY_LIMIT = 3;
-const COST_WARNING = 20;   // $20 预警
-const COST_SHUTDOWN = 40;   // $40 关停
+Tailor ALL output specifically for this target:
+- Rewrite resume bullet points using language and keywords common in this company's job postings
+- Highlight skills and experiences most relevant to this specific target
+- Frame achievements in terms this company's recruiters and hiring managers care about
+- Interview questions must reflect this company's known interview style and focus areas
+- Output content should differ substantially (≥50%) from a generic, non-targeted version
+`
+    : ''
 
-async function checkCostAndAlert(): Promise<{ shouldStop: boolean }> {
-  const currentMonth = new Date().toISOString().slice(0, 7);
-  
-  const { data } = await supabase
-    .from('monthly_cost')
-    .select('total_cost_usd')
-    .eq('year_month', currentMonth)
-    .maybeSingle();
-  
-  const totalCost = data?.total_cost_usd || 0;
-  console.log('当前月成本:', totalCost);
-  
-  if (totalCost >= COST_SHUTDOWN) {
-    return { shouldStop: true };
-  }
-  
-  if (totalCost >= COST_WARNING) {
-    const alertKey = `cost_alert_${currentMonth}`;
-    const { data: alerted } = await supabase
-      .from('system_settings')
-      .select('value')
-      .eq('key', alertKey)
-      .maybeSingle();
-    
-    if (!alerted) {
-      console.log('发送预警邮件...');
-      await resend.emails.send({
-        from: 'HireMe AI <alert@hireme-ai.com>',
-        to: process.env.ALERT_EMAIL!,
-        subject: `⚠️ Cost Alert: $${totalCost.toFixed(2)}`,
-        html: `<p>Monthly API cost has reached <strong>$${totalCost.toFixed(2)}</strong>.</p>
-               <p>Warning threshold: $${COST_WARNING}</p>
-               <p>Shutdown threshold: $${COST_SHUTDOWN}</p>
-               <p>Please check your usage.</p>`,
-      });
-      
-      await supabase.from('system_settings').upsert({
-        key: alertKey,
-        value: 'sent',
-        updated_at: new Date().toISOString(),
-      });
-    }
-  }
-  
-  return { shouldStop: false };
+  return `You are an expert resume coach and career strategist specializing in helping candidates land interviews at top companies.
+${atsSection}
+## Communication Style
+- Write in confident, direct, results-oriented American English
+- Use active voice and strong action verbs (Spearheaded, Drove, Delivered, Scaled, Built)
+- Quantify achievements wherever possible (%, $, time saved, team size)
+- Avoid passive constructions, filler phrases, and vague claims
+- Never use: "responsible for", "worked on", "helped with", "assisted in"
+- No Chinese-style expressions translated directly to English
+
+## Output Format
+Return a JSON object with this exact structure (no markdown fences, raw JSON only):
+{
+  "optimized_resume": "Full rewritten resume text with clear sections",
+  "key_improvements": ["improvement 1", "improvement 2", "improvement 3"],
+  "interview_questions": [
+    { "question": "Q text", "tip": "How to answer it for this target" }
+  ],
+  "ats_keywords": ["keyword1", "keyword2", "keyword3", "keyword4", "keyword5"]
 }
 
-export async function POST(request: Request) {
-  try {
-    const { shouldStop } = await checkCostAndAlert();
-    if (shouldStop) {
-      return NextResponse.json(
-        { error: 'Service temporarily paused due to cost limit. Please try again next month.' },
-        { status: 503 }
-      );
-    }
-    
-    const { resumeText, deviceId } = await request.json();
-    
-    console.log('收到请求, deviceId:', deviceId);
-    
-    if (!deviceId) {
-      return NextResponse.json({ error: 'deviceId required' }, { status: 400 });
-    }
-    
-    const today = new Date().toISOString().slice(0, 10);
-    const { data: usageData } = await supabase
-      .from('daily_usage')
-      .select('call_count')
-      .eq('device_id', deviceId)
-      .eq('usage_date', today)
-      .maybeSingle();
-    
-    const currentCount = usageData?.call_count || 0;
-    console.log('今日已使用次数:', currentCount);
-    
-    if (currentCount >= DAILY_LIMIT) {
-      return NextResponse.json(
-        { error: 'Daily limit reached. Come back tomorrow.' },
-        { status: 429 }
-      );
-    }
-    
-    console.log('调用 AI...');
-    const completion = await openai.chat.completions.create({
-      model: 'deepseek-chat',
-      messages: [
-        {
-          role: 'system',
-          content: `You are an expert career coach for global job seekers.
+The "ats_keywords" field must contain 5 high-impact keywords from the target industry / company.
+The "interview_questions" array must contain exactly 5 questions.
+All content must be in English.`
+}
 
-CRITICAL RULES for the 30-second self-introduction:
-1. Use FIRST PERSON ("I", "my", "me")
-2. Start with your current role and experience level: "I'm a [role] with [X] years of experience in [field]"
-3. Focus on ACHIEVEMENTS with metrics, not responsibilities
-4. Use ACTION VERBS: led, built, optimized, reduced, delivered, scaled
-5. End with VALUE OFFER: what you can do for THEM
-6. Avoid humble or hedging language
-7. Keep tone CONFIDENT and DIRECT`,
-        },
-        {
-          role: 'user',
-          content: `Based on the following resume, generate three parts in THE SAME LANGUAGE as the resume:
-
-1. Optimized resume (use strong action verbs, quantify achievements)
-2. 10 interview questions with key points for answers
-3. 30-second self-introduction (follow the CRITICAL RULES above)
-
-Resume:
-${resumeText}`,
-        },
-      ],
-      temperature: 0.7,
-    });
-    
-    const result = completion.choices[0].message.content;
-    const usage = completion.usage;
-    
-    const inputTokens = usage?.prompt_tokens || 0;
-    const outputTokens = usage?.completion_tokens || 0;
-    const totalTokens = inputTokens + outputTokens;
-    const cost = calculateCost('deepseek-chat', inputTokens, outputTokens);
-    
-    console.log('Token消耗:', { inputTokens, outputTokens, totalTokens, cost });
-    
-    // 记录成本
-    const { error: costError } = await supabase.from('cost_logs').insert({
-      device_id: deviceId,
-      model: 'deepseek-chat',
-      input_tokens: inputTokens,
-      output_tokens: outputTokens,
-      total_tokens: totalTokens,
-      cost_usd: cost,
-    });
-    
-    if (costError) {
-      console.error('成本记录失败:', costError);
-    } else {
-      console.log('成本记录成功');
-    }
-    
-    // 更新月度总成本
-    const currentMonth = new Date().toISOString().slice(0, 7);
-    const { error: rpcError } = await supabase.rpc('increment_monthly_cost', {
-      p_year_month: currentMonth,
-      p_cost: cost,
-    });
-    
-    if (rpcError) {
-      console.error('月度成本更新失败:', rpcError);
-    }
-    
-    // 更新设备信息
-    await supabase.from('anonymous_devices').upsert({
-      device_id: deviceId,
-      last_seen_at: new Date().toISOString(),
-    }, { onConflict: 'device_id' });
-    
-    // 更新每日使用次数
-    if (currentCount === 0) {
-      await supabase.from('daily_usage').insert({
-        device_id: deviceId,
-        usage_date: today,
-        call_count: 1,
-      });
-    } else {
-      await supabase.from('daily_usage')
-        .update({ call_count: currentCount + 1 })
-        .eq('device_id', deviceId)
-        .eq('usage_date', today);
-    }
-    
-    console.log('请求处理完成');
-    return NextResponse.json({ result });
-  } catch (error: any) {
-    console.error('API Error:', error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+function buildUserMessage(resume: string, targetCompany: string): string {
+  if (targetCompany) {
+    return `Please optimize my resume for ${targetCompany}.\n\nMy resume:\n${resume}`
   }
+  return `Please optimize my resume for maximum impact.\n\nMy resume:\n${resume}`
+}
+
+export async function POST(req: NextRequest) {
+  let body: unknown
+  try {
+    body = await req.json()
+  } catch {
+    return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 })
+  }
+
+  const { resume: rawResume, deviceId, targetCompany: rawTarget } = body as Record<string, unknown>
+
+  if (!isValidDeviceId(deviceId)) {
+    return NextResponse.json({ error: 'Invalid device ID' }, { status: 400 })
+  }
+
+  const resume = sanitizeText(rawResume, 8000)
+  if (!resume || resume.length < 50) {
+    return NextResponse.json(
+      { error: 'Resume is too short. Please paste your full resume.' },
+      { status: 400 }
+    )
+  }
+
+  const targetCompany = sanitizeText(rawTarget, 100)
+
+  let usage
+  try {
+    usage = await getUsage(deviceId as string)
+  } catch (err) {
+    console.error('[generate] getUsage failed:', err)
+    return NextResponse.json({ error: 'Failed to check quota' }, { status: 500 })
+  }
+
+  if (!canGenerate(usage)) {
+    return NextResponse.json(
+      {
+        error: 'quota_exceeded',
+        message: 'You have used all free generations. Please purchase credits to continue.',
+        totalUsed: usage.total_used,
+        credits: usage.credits,
+      },
+      { status: 402 }
+    )
+  }
+
+  let aiContent: string
+  try {
+    const deepseekRes = await fetch('https://api.deepseek.com/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${process.env.DEEPSEEK_API_KEY}`,
+      },
+      body: JSON.stringify({
+        model: 'deepseek-chat',
+        messages: [
+          { role: 'system', content: buildSystemPrompt(targetCompany) },
+          { role: 'user',   content: buildUserMessage(resume, targetCompany) },
+        ],
+        temperature: 0.7,
+        max_tokens: 3000,
+        response_format: { type: 'json_object' },
+      }),
+    })
+
+    if (!deepseekRes.ok) {
+      const errText = await deepseekRes.text()
+      console.error('[generate] DeepSeek error:', deepseekRes.status, errText)
+      return NextResponse.json({ error: 'AI service error, please try again.' }, { status: 502 })
+    }
+
+    const aiData = await deepseekRes.json()
+    aiContent = aiData.choices?.[0]?.message?.content ?? ''
+
+    if (!aiContent) {
+      throw new Error('Empty AI response')
+    }
+  } catch (err) {
+    console.error('[generate] DeepSeek call failed:', err)
+    return NextResponse.json({ error: 'AI service error, please try again.' }, { status: 502 })
+  }
+
+  let result: Record<string, unknown>
+  try {
+    result = JSON.parse(aiContent)
+  } catch {
+    console.error('[generate] Failed to parse AI JSON:', aiContent)
+    return NextResponse.json({ error: 'AI response parsing error, please try again.' }, { status: 502 })
+  }
+
+  try {
+    await incrementUsage(deviceId as string)
+  } catch (err) {
+    console.error('[generate] incrementUsage failed:', err)
+  }
+
+  return NextResponse.json({
+    ...result,
+    aiGenerated: true,
+    targetCompany: targetCompany || null,
+  })
 }
