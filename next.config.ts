@@ -1,10 +1,36 @@
-import type { NextConfig } from "next";
+import type { NextConfig } from 'next';
+
+const securityHeaders = [
+  { key: 'X-Frame-Options', value: 'DENY' },
+  { key: 'X-Content-Type-Options', value: 'nosniff' },
+  { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
+  {
+    key: 'Content-Security-Policy',
+    value: [
+      "default-src 'self'",
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
+      "style-src 'self' 'unsafe-inline'",
+      "img-src 'self' data: blob:",
+      "font-src 'self' data:",
+      "connect-src 'self' https://*.supabase.co https://api.deepseek.com https://test-api.creem.io https://api.creem.io",
+      "frame-ancestors 'none'",
+      "base-uri 'self'",
+      "form-action 'self'",
+    ].join('; '),
+  },
+];
 
 const nextConfig: NextConfig = {
-  // 告诉 Next.js 转译 pdfjs-dist，解决模块格式问题
   transpilePackages: ['pdfjs-dist'],
-  // 添加一个空的 turbopack 配置以消除警告，未来如需自定义可以在这里添加
   turbopack: {},
+  async headers() {
+    return [
+      {
+        source: '/(.*)',
+        headers: securityHeaders,
+      },
+    ];
+  },
 };
 
 export default nextConfig;

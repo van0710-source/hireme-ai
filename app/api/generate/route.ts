@@ -1,41 +1,47 @@
 import { NextResponse } from 'next/server';
 import OpenAI from 'openai';
-import { createClient } from '@supabase/supabase-js';
 import { Resend } from 'resend';
 import { calculateCost } from '@/lib/cost';
+import { createAdminClient } from '@/lib/supabase-admin';
+import {
+  buildQuotaUpdate,
+  computeQuotaStatus,
+  determineDeduction,
+  type DeviceQuota,
+} from '@/lib/quota';
+import {
+  isValidDeviceId,
+  MAX_RESUME_LENGTH,
+  sanitizeOptionalTarget,
+  sanitizeText,
+} from '@/lib/validation';
 
 const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-  baseURL: process.env.OPENAI_BASE_URL,
+  apiKey: process.env.DEEPSEEK_API_KEY ?? process.env.OPENAI_API_KEY,
+  baseURL: process.env.OPENAI_BASE_URL ?? 'https://api.deepseek.com',
 });
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
-const DAILY_LIMIT = 3;
-const COST_WARNING = 20;   // $20 预警
-const COST_SHUTDOWN = 40;   // $40 关停
+const COST_WARNING = 20;
+const COST_SHUTDOWN = 40;
 
 async function checkCostAndAlert(): Promise<{ shouldStop: boolean }> {
+  const supabase = createAdminClient();
   const currentMonth = new Date().toISOString().slice(0, 7);
-  
+
   const { data } = await supabase
     .from('monthly_cost')
     .select('total_cost_usd')
     .eq('year_month', currentMonth)
     .maybeSingle();
-  
+
   const totalCost = data?.total_cost_usd || 0;
-  console.log('当前月成本:', totalCost);
-  
+
   if (totalCost >= COST_SHUTDOWN) {
     return { shouldStop: true };
   }
-  
+
   if (totalCost >= COST_WARNING) {
     const alertKey = `cost_alert_${currentMonth}`;
     const { data: alerted } = await supabase
@@ -43,19 +49,15 @@ async function checkCostAndAlert(): Promise<{ shouldStop: boolean }> {
       .select('value')
       .eq('key', alertKey)
       .maybeSingle();
-    
-    if (!alerted) {
-      console.log('发送预警邮件...');
+
+    if (!alerted && process.env.ALERT_EMAIL && process.env.RESEND_API_KEY) {
       await resend.emails.send({
         from: 'HireMe AI <alert@hireme-ai.com>',
-        to: process.env.ALERT_EMAIL!,
-        subject: `⚠️ Cost Alert: $${totalCost.toFixed(2)}`,
-        html: `<p>Monthly API cost has reached <strong>$${totalCost.toFixed(2)}</strong>.</p>
-               <p>Warning threshold: $${COST_WARNING}</p>
-               <p>Shutdown threshold: $${COST_SHUTDOWN}</p>
-               <p>Please check your usage.</p>`,
+        to: process.env.ALERT_EMAIL,
+        subject: `Cost Alert: $${totalCost.toFixed(2)}`,
+        html: `<p>Monthly API cost has reached <strong>$${totalCost.toFixed(2)}</strong>.</p>`,
       });
-      
+
       await supabase.from('system_settings').upsert({
         key: alertKey,
         value: 'sent',
@@ -63,8 +65,61 @@ async function checkCostAndAlert(): Promise<{ shouldStop: boolean }> {
       });
     }
   }
-  
+
   return { shouldStop: false };
+}
+
+async function getOrCreateDeviceQuota(deviceId: string): Promise<DeviceQuota> {
+  const supabase = createAdminClient();
+
+  const { data: existing } = await supabase
+    .from('anonymous_devices')
+    .select('total_used, credits, paid_uses')
+    .eq('device_id', deviceId)
+    .maybeSingle();
+
+  if (existing) {
+    return {
+      total_used: existing.total_used ?? 0,
+      credits: existing.credits ?? 0,
+      paid_uses: existing.paid_uses ?? 0,
+    };
+  }
+
+  await supabase.from('anonymous_devices').insert({
+    device_id: deviceId,
+    last_seen_at: new Date().toISOString(),
+    total_used: 0,
+    credits: 0,
+    paid_uses: 0,
+  });
+
+  return { total_used: 0, credits: 0, paid_uses: 0 };
+}
+
+function buildPrompt(resumeText: string, target?: string): string {
+  const targetSection = target
+    ? `Target company or industry: ${target}
+
+Tailoring requirements:
+- Mirror the language, values, and role expectations associated with this target
+- Emphasize skills and achievements most relevant to this target
+- Interview questions must reflect what this company/industry typically asks
+- Use Western US/EU recruiting style: direct, confident, results-oriented
+- Avoid humble hedging and non-native phrasing patterns
+- Output must differ substantially from a generic version (different keywords, emphasis, and question angles)`
+    : `No specific target provided. Generate a strong general-purpose version using Western US/EU recruiting style: direct, confident, results-oriented.`;
+
+  return `Based on the following resume, generate three parts in THE SAME LANGUAGE as the resume:
+
+1. Optimized resume (use strong action verbs, quantify achievements, ATS-friendly keywords)
+2. 10 interview questions with key points for answers
+3. 30-second self-introduction (follow the CRITICAL RULES in the system prompt)
+
+${targetSection}
+
+Resume:
+${resumeText}`;
 }
 
 export async function POST(request: Request) {
@@ -76,77 +131,69 @@ export async function POST(request: Request) {
         { status: 503 }
       );
     }
-    
-    const { resumeText, deviceId } = await request.json();
-    
-    console.log('收到请求, deviceId:', deviceId);
-    
-    if (!deviceId) {
-      return NextResponse.json({ error: 'deviceId required' }, { status: 400 });
+
+    const body = await request.json();
+    const deviceId = body.deviceId as string;
+    const resumeText = sanitizeText(body.resumeText, MAX_RESUME_LENGTH);
+    const target = sanitizeOptionalTarget(body.targetCompanyOrIndustry);
+
+    if (!deviceId || !isValidDeviceId(deviceId)) {
+      return NextResponse.json({ error: 'Valid deviceId required' }, { status: 400 });
     }
-    
-    const today = new Date().toISOString().slice(0, 10);
-    const { data: usageData } = await supabase
-      .from('daily_usage')
-      .select('call_count')
-      .eq('device_id', deviceId)
-      .eq('usage_date', today)
-      .maybeSingle();
-    
-    const currentCount = usageData?.call_count || 0;
-    console.log('今日已使用次数:', currentCount);
-    
-    if (currentCount >= DAILY_LIMIT) {
+
+    if (!resumeText) {
+      return NextResponse.json({ error: 'Resume text is required' }, { status: 400 });
+    }
+
+    const quota = await getOrCreateDeviceQuota(deviceId);
+    const deduction = determineDeduction(quota);
+
+    if (!deduction) {
       return NextResponse.json(
-        { error: 'Daily limit reached. Come back tomorrow.' },
-        { status: 429 }
+        {
+          error: 'Free limit reached. Please purchase credits to continue.',
+          code: 'PAYMENT_REQUIRED',
+        },
+        { status: 402 }
       );
     }
-    
-    console.log('调用 AI...');
+
     const completion = await openai.chat.completions.create({
       model: 'deepseek-chat',
       messages: [
         {
           role: 'system',
-          content: `You are an expert career coach for global job seekers.
+          content: `You are an expert career coach for global job seekers targeting Western markets.
 
 CRITICAL RULES for the 30-second self-introduction:
 1. Use FIRST PERSON ("I", "my", "me")
-2. Start with your current role and experience level: "I'm a [role] with [X] years of experience in [field]"
+2. Start with your current role and experience level
 3. Focus on ACHIEVEMENTS with metrics, not responsibilities
 4. Use ACTION VERBS: led, built, optimized, reduced, delivered, scaled
 5. End with VALUE OFFER: what you can do for THEM
 6. Avoid humble or hedging language
-7. Keep tone CONFIDENT and DIRECT`,
+7. Keep tone CONFIDENT and DIRECT
+
+All output is AI-generated suggestions for reference only. Never promise interview or job outcomes.`,
         },
         {
           role: 'user',
-          content: `Based on the following resume, generate three parts in THE SAME LANGUAGE as the resume:
-
-1. Optimized resume (use strong action verbs, quantify achievements)
-2. 10 interview questions with key points for answers
-3. 30-second self-introduction (follow the CRITICAL RULES above)
-
-Resume:
-${resumeText}`,
+          content: buildPrompt(resumeText, target),
         },
       ],
-      temperature: 0.7,
+      temperature: target ? 0.85 : 0.7,
     });
-    
+
     const result = completion.choices[0].message.content;
     const usage = completion.usage;
-    
     const inputTokens = usage?.prompt_tokens || 0;
     const outputTokens = usage?.completion_tokens || 0;
     const totalTokens = inputTokens + outputTokens;
     const cost = calculateCost('deepseek-chat', inputTokens, outputTokens);
-    
-    console.log('Token消耗:', { inputTokens, outputTokens, totalTokens, cost });
-    
-    // 记录成本
-    const { error: costError } = await supabase.from('cost_logs').insert({
+
+    const supabase = createAdminClient();
+
+    await supabase.from('cost_logs').insert({
       device_id: deviceId,
       model: 'deepseek-chat',
       input_tokens: inputTokens,
@@ -154,48 +201,36 @@ ${resumeText}`,
       total_tokens: totalTokens,
       cost_usd: cost,
     });
-    
-    if (costError) {
-      console.error('成本记录失败:', costError);
-    } else {
-      console.log('成本记录成功');
-    }
-    
-    // 更新月度总成本
+
     const currentMonth = new Date().toISOString().slice(0, 7);
-    const { error: rpcError } = await supabase.rpc('increment_monthly_cost', {
+    await supabase.rpc('increment_monthly_cost', {
       p_year_month: currentMonth,
       p_cost: cost,
     });
-    
-    if (rpcError) {
-      console.error('月度成本更新失败:', rpcError);
-    }
-    
-    // 更新设备信息
-    await supabase.from('anonymous_devices').upsert({
-      device_id: deviceId,
-      last_seen_at: new Date().toISOString(),
-    }, { onConflict: 'device_id' });
-    
-    // 更新每日使用次数
-    if (currentCount === 0) {
-      await supabase.from('daily_usage').insert({
+
+    const quotaUpdate = buildQuotaUpdate(quota, deduction);
+    await supabase.from('anonymous_devices').upsert(
+      {
         device_id: deviceId,
-        usage_date: today,
-        call_count: 1,
-      });
-    } else {
-      await supabase.from('daily_usage')
-        .update({ call_count: currentCount + 1 })
-        .eq('device_id', deviceId)
-        .eq('usage_date', today);
-    }
-    
-    console.log('请求处理完成');
-    return NextResponse.json({ result });
-  } catch (error: any) {
+        last_seen_at: new Date().toISOString(),
+        ...quotaUpdate,
+      },
+      { onConflict: 'device_id' }
+    );
+
+    const updatedStatus = computeQuotaStatus({
+      total_used: quotaUpdate.total_used,
+      credits: quotaUpdate.credits ?? quota.credits,
+      paid_uses: quotaUpdate.paid_uses ?? quota.paid_uses,
+    });
+
+    return NextResponse.json({
+      result,
+      quota: updatedStatus,
+    });
+  } catch (error) {
     console.error('API Error:', error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    const message = error instanceof Error ? error.message : 'Generation failed';
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }
