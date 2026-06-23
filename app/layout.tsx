@@ -1,17 +1,13 @@
 // app/layout.tsx
-
 import type { Metadata } from 'next'
-import { Geist, Geist_Mono } from 'next/font/google'
+import { Plus_Jakarta_Sans } from 'next/font/google'
 import './globals.css'
+import LanguageNav from '@/components/LanguageNav'
 
-const geistSans = Geist({
-  variable: '--font-geist-sans',
+const jakarta = Plus_Jakarta_Sans({
   subsets: ['latin'],
-})
-
-const geistMono = Geist_Mono({
-  variable: '--font-geist-mono',
-  subsets: ['latin'],
+  variable: '--font-jakarta',
+  weight: ['400', '500', '600', '700', '800'],
 })
 
 export const metadata: Metadata = {
@@ -36,31 +32,12 @@ const productSchema = {
   '@context': 'https://schema.org',
   '@type': 'Product',
   name: 'HireMe AI',
-  description:
-    'AI-powered resume optimisation and interview preparation. Paste your resume and get a tailored version for any company or industry in seconds.',
+  description: 'AI-powered resume optimisation and interview preparation.',
   url: 'https://hireme-ai.com',
   offers: [
-    {
-      '@type': 'Offer',
-      name: 'Free tier',
-      price: '0',
-      priceCurrency: 'USD',
-      description: '3 free AI-tailored resume generations',
-    },
-    {
-      '@type': 'Offer',
-      name: 'Single use',
-      price: '1.00',
-      priceCurrency: 'USD',
-      description: 'One additional tailored resume generation',
-    },
-    {
-      '@type': 'Offer',
-      name: 'Credits pack',
-      price: '20.00',
-      priceCurrency: 'USD',
-      description: '200 credits (~13 tailored resume generations)',
-    },
+    { '@type': 'Offer', name: 'Free tier', price: '0', priceCurrency: 'USD' },
+    { '@type': 'Offer', name: 'Single use', price: '1.00', priceCurrency: 'USD' },
+    { '@type': 'Offer', name: 'Credits pack', price: '20.00', priceCurrency: 'USD' },
   ],
 }
 
@@ -78,10 +55,7 @@ const organizationSchema = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html
-      lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
-    >
+    <html lang="en" className={`${jakarta.variable}`}>
       <head>
         <script
           type="application/ld+json"
@@ -92,39 +66,28 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}
         />
       </head>
-      <body className="min-h-full flex flex-col">
-        {/* Navigation */}
-        <nav className="border-b border-gray-100 bg-white/80 backdrop-blur-sm sticky top-0 z-40">
-          <div className="mx-auto flex max-w-2xl items-center justify-between px-4 py-3">
-            <a href="/" className="text-base font-bold text-gray-900 tracking-tight">
-              HireMe AI
-            </a>
-            <div className="flex items-center gap-4 text-sm text-gray-500">
-              <a href="/blog" className="hover:text-gray-800 transition-colors">Resources</a>
-              <a href="/privacy" className="hover:text-gray-800 transition-colors">Privacy</a>
-              <a href="/terms" className="hover:text-gray-800 transition-colors">Terms</a>
-            </div>
-          </div>
-        </nav>
+      <body className={`${jakarta.className} antialiased min-h-screen flex flex-col`}>
 
-        {children}
+        {/* ── Nav ── */}
+        <LanguageNav />
 
-        {/* Footer */}
-        <footer className="border-t border-gray-100 bg-white mt-8">
-          <div className="mx-auto max-w-2xl px-4 py-8">
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-              <p className="text-sm text-gray-400">
-                © {new Date().getFullYear()} HireMe AI · AI-generated content is for reference only
-              </p>
-              <div className="flex gap-4 text-sm text-gray-400">
-                <a href="/privacy" className="hover:text-gray-600 transition-colors">Privacy</a>
-                <a href="/terms" className="hover:text-gray-600 transition-colors">Terms</a>
-                <a href="/blog" className="hover:text-gray-600 transition-colors">Resources</a>
-                <a href="mailto:contact@hireme-ai.com" className="hover:text-gray-600 transition-colors">Contact</a>
-              </div>
+        {/* ── Page content ── */}
+        <div className="flex-1">{children}</div>
+
+        {/* ── Footer ── */}
+        <footer className="border-t border-gray-100 bg-white">
+          <div className="mx-auto max-w-5xl px-6 py-6 flex flex-col sm:flex-row items-center justify-between gap-3">
+            <p className="text-xs text-gray-400">
+              © {new Date().getFullYear()} HireMe AI · AI-generated content is for reference only
+            </p>
+            <div className="flex gap-4 text-xs text-gray-400">
+              <a href="/privacy" className="hover:text-gray-600 transition-colors">Privacy</a>
+              <a href="/terms" className="hover:text-gray-600 transition-colors">Terms</a>
+              <a href="mailto:contact@hireme-ai.com" className="hover:text-gray-600 transition-colors">Contact</a>
             </div>
           </div>
         </footer>
+
       </body>
     </html>
   )

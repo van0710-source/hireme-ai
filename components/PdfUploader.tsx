@@ -29,7 +29,8 @@ export default function PdfUploader({ onExtracted }: Props) {
 
     try {
       const pdfjsLib = await import('pdfjs-dist')
-      pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.mjs`
+      // Use local worker instead of CDN
+      pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.mjs'
 
       const arrayBuffer = await file.arrayBuffer()
       const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise
@@ -40,7 +41,7 @@ export default function PdfUploader({ onExtracted }: Props) {
         const content = await page.getTextContent()
         const pageText = content.items
           .map((item: unknown) => {
-            const it = item as { str?: string; hasEOL?: boolean }
+            const it = item as { str?: string }
             return it.str ?? ''
           })
           .join(' ')
@@ -52,7 +53,7 @@ export default function PdfUploader({ onExtracted }: Props) {
       if (!cleaned || cleaned.length < 50) {
         setStatus('error')
         setErrorMsg(
-          'Could not extract text from this PDF. It may be a scanned image. Please paste your resume as text instead.'
+          "Looks like this PDF is image-based and can't be read automatically. Please copy your resume text from Word or Google Docs and paste it below."
         )
         return
       }
@@ -62,7 +63,9 @@ export default function PdfUploader({ onExtracted }: Props) {
     } catch (err) {
       console.error('[PdfUploader] parse error:', err)
       setStatus('error')
-      setErrorMsg('Failed to read the PDF. Please try a different file or paste your resume as text.')
+      setErrorMsg(
+        "Looks like this PDF is image-based and can't be read automatically. Please copy your resume text from Word or Google Docs and paste it below."
+      )
     }
   }
 
@@ -79,7 +82,7 @@ export default function PdfUploader({ onExtracted }: Props) {
   }
 
   return (
-    <div className="mb-3">
+    <div className="mb-4">
       <label
         htmlFor="pdf-upload"
         onDrop={handleDrop}
@@ -88,7 +91,7 @@ export default function PdfUploader({ onExtracted }: Props) {
       >
         {status === 'loading' ? (
           <>
-            <span className="text-2xl animate-spin">⏳</span>
+            <span className="text-2xl animate-pulse">📄</span>
             <p className="mt-2 text-sm text-gray-500">Reading your PDF…</p>
           </>
         ) : status === 'done' ? (
@@ -114,8 +117,19 @@ export default function PdfUploader({ onExtracted }: Props) {
         />
       </label>
 
+      {/* Persistent hint */}
+      {status !== 'error' && (
+        <p className="mt-1.5 text-xs text-gray-400 text-center">
+          Text-based PDFs only · Scanned images not supported ·{' '}
+          <span className="text-gray-500">paste plain text instead if unsure</span>
+        </p>
+      )}
+
+      {/* Error message */}
       {status === 'error' && (
-        <p className="mt-2 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600">{errorMsg}</p>
+        <p className="mt-2 rounded-lg bg-amber-50 border border-amber-100 px-3 py-2 text-sm text-amber-700">
+          {errorMsg}
+        </p>
       )}
     </div>
   )
