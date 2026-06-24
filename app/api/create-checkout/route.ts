@@ -37,6 +37,9 @@ export async function POST(req: NextRequest) {
 console.log('[create-checkout] productType:', productType, 'productId:', PRODUCT_MAP[productType])
   console.log('[create-checkout] CREEM_API_KEY exists:', !!process.env.CREEM_API_KEY)
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://hireme-ai.com'
+// In preview, use the request origin instead
+const requestOrigin = req.headers.get('origin') ?? appUrl
+const baseUrl = requestOrigin.includes('vercel.app') ? requestOrigin : appUrl
 
   try {
     const isTest = process.env.CREEM_API_KEY?.startsWith('creem_test')
@@ -49,7 +52,7 @@ const creemRes = await fetch(`${creemBaseUrl}/v1/checkouts`, {
       },
       body: JSON.stringify({
         product_id:   productId,
-        success_url:  `${appUrl}/payment/success?device=${deviceId}&type=${productType}`,
+        success_url:  `${baseUrl}/payment/success?device=${deviceId}&type=${productType}`,
         metadata: {
           device_id:    deviceId,
           product_type: productType,
