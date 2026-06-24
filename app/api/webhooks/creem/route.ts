@@ -62,17 +62,17 @@ export async function POST(req: NextRequest) {
   }
 
   const eventType = event.type as string
-  if (eventType !== 'payment.succeeded') {
+  if (eventType !== 'payment.succeeded' && eventType !== 'checkout.completed') {
     return NextResponse.json({ received: true })
   }
 
   const data = (event.data ?? event.object ?? {}) as Record<string, unknown>
   const metadata = (data.metadata ?? {}) as Record<string, unknown>
 
-  const paymentId   = (data.id ?? data.payment_id ?? data.checkout_id) as string
-  const deviceId    = metadata.device_id as string
-  const productType = metadata.product_type as string
-  const amountCents = (data.amount ?? 0) as number
+  const paymentId   = (data.id ?? data.payment_id ?? data.checkout_id ?? data.order_id) as string
+  const deviceId    = (metadata.device_id ?? metadata.deviceId) as string
+  const productType = (metadata.product_type ?? metadata.productType) as string
+  const amountCents = (data.amount ?? data.total ?? 0) as number
 
   if (!paymentId || !isValidDeviceId(deviceId) || !isValidProductType(productType)) {
     console.error('[webhook/creem] missing or invalid fields', { paymentId, deviceId, productType })
