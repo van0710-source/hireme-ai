@@ -45,7 +45,12 @@ Return a JSON object with this exact structure (no markdown fences, raw JSON onl
 }
 
 The "ats_keywords" field must contain 5 high-impact keywords from the target industry / company.
-The "interview_questions" array must contain exactly 10 questions.
+The "interview_questions" array must contain exactly 10 questions, structured as follows:
+- 5 technical questions (system design, coding, architecture, or domain-specific)
+- 4 behavioral questions using STAR method (leadership, conflict, failure, collaboration)
+- 1 culture fit question (why this company, values alignment, or motivation)
+
+For the tips, write them in a conversational coaching tone — not just what to mention, but HOW to say it naturally in an interview setting.
 All content must be in English.`
 }
 
