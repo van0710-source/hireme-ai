@@ -1,12 +1,9 @@
-// next.config.ts
 import type { NextConfig } from 'next'
 
 const nextConfig: NextConfig = {
-  // 保留原有配置
   transpilePackages: ['pdfjs-dist'],
   turbopack: {},
 
-  // 安全响应头
   async headers() {
     return [
       {
@@ -23,9 +20,11 @@ const nextConfig: NextConfig = {
               "default-src 'self'",
               "style-src 'self' 'unsafe-inline'",
               "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
-              `connect-src 'self' ${process.env.NEXT_PUBLIC_SUPABASE_URL ?? ''} https://api.deepseek.com https://api.creem.io`,
-              "worker-src 'self' blob: https://cdnjs.cloudflare.com",
-              "script-src-elem 'self' 'unsafe-inline' https://cdnjs.cloudflare.com",
+              // Added ipapi.co for IP language detection, vercel.live for preview toolbar
+              `connect-src 'self' ${process.env.NEXT_PUBLIC_SUPABASE_URL ?? ''} https://api.deepseek.com https://api.creem.io https://ipapi.co https://*.vercel.live wss://*.vercel.live`,
+              "worker-src 'self' blob:",
+              // Added vercel.live for preview feedback script
+              "script-src-elem 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://*.vercel.live",
               "frame-src 'none'",
               "img-src 'self' data:",
               "font-src 'self' https://fonts.gstatic.com",
@@ -36,7 +35,6 @@ const nextConfig: NextConfig = {
     ]
   },
 
-  // 解决 pdfjs-dist 在 Node.js 环境的 canvas 警告
   webpack(config) {
     config.resolve.alias = {
       ...(config.resolve.alias ?? {}),
