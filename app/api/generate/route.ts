@@ -47,7 +47,7 @@ Return a JSON object with this exact structure (no markdown fences, raw JSON onl
 
 The "ats_keywords" field must contain 5 high-impact keywords, mixing both technical stack keywords (languages, frameworks, tools) and industry/domain keywords relevant to the target company or industry. Ensure a balance between technical and domain terms.
 The "interview_questions" array must contain exactly 10 questions, structured as follows:
-- 5 technical questions (system design, coding, architecture, or domain-specific). For any coding or algorithm questions, the tip must explain step-by-step how to walk through the solution on a whiteboard in plain conversational language, not just name the algorithm.
+- - 5 technical questions (system design, coding, architecture, or domain-specific). Calibrate difficulty to match the seniority level inferred from the resume (junior, mid, senior, staff). For senior and above, coding questions should be medium-to-hard difficulty (not trivial array manipulation). For any coding or algorithm questions, the tip must explain step-by-step how to walk through the solution on a whiteboard in plain conversational language, not just name the algorithm.
 - 4 behavioral questions using STAR method (leadership, conflict, failure, collaboration). Tips must guide HOW to tell the story naturally, not just what to mention.
 - 1 culture fit question (why this company, values alignment, or motivation). Tip must encourage genuine, specific, and researched answers.
 
