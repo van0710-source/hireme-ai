@@ -65,6 +65,25 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}
         />
+        <script
+          type="text/javascript"
+          src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"
+          async
+        />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              function googleTranslateElementInit() {
+                new google.translate.TranslateElement({
+                  pageLanguage: 'en',
+                  includedLanguages: 'zh-CN,zh-TW,es,fr,de,ja,ko',
+                  layout: google.translate.TranslateElement.InlineLayout.SIMPLE,
+                  autoDisplay: false
+                }, 'google_translate_element');
+              }
+            `,
+          }}
+        />
       </head>
       <body className={`${jakarta.className} antialiased min-h-screen flex flex-col`}>
 
