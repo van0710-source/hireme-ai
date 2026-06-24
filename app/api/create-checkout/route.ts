@@ -34,11 +34,14 @@ export async function POST(req: NextRequest) {
   if (!productId) {
     return NextResponse.json({ error: 'Product not configured' }, { status: 500 })
   }
-
+console.log('[create-checkout] productType:', productType, 'productId:', PRODUCT_MAP[productType])
+  console.log('[create-checkout] CREEM_API_KEY exists:', !!process.env.CREEM_API_KEY)
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://hireme-ai.com'
 
   try {
-    const creemRes = await fetch('https://api.creem.io/v1/checkouts', {
+    const isTest = process.env.CREEM_API_KEY?.startsWith('creem_test')
+const creemBaseUrl = isTest ? 'https://test-api.creem.io' : 'https://api.creem.io'
+const creemRes = await fetch(`${creemBaseUrl}/v1/checkouts`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
