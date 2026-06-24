@@ -44,7 +44,7 @@ Return a JSON object with this exact structure (no markdown fences, raw JSON onl
   "ats_keywords": ["keyword1", "keyword2", "keyword3", "keyword4", "keyword5"]
 }
 
-The "ats_keywords" field must contain 5 high-impact keywords from the target industry / company.
+The "ats_keywords" field must contain 5 high-impact keywords, mixing both technical stack keywords (languages, frameworks, tools) and industry/domain keywords relevant to the target company or industry. Ensure a balance between technical and domain terms.
 The "interview_questions" array must contain exactly 10 questions, structured as follows:
 - 5 technical questions (system design, coding, architecture, or domain-specific)
 - 4 behavioral questions using STAR method (leadership, conflict, failure, collaboration)
