@@ -1,11 +1,9 @@
-'use client'
+// components/LanguageNav.tsx
 
 export default function LanguageNav() {
   return (
     <nav className="sticky top-0 z-40 border-b border-gray-100 bg-white/90 backdrop-blur-md">
-      <div className="mx-auto flex max-w-5xl items-center justify-between px-6 py-3">
-
-        {/* Logo */}
+      <div className="mx-auto flex max-w-5xl items-center px-6 py-3">
         <a href="/" className="flex items-center gap-2.5 group">
           <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
             <rect width="32" height="32" rx="8" fill="#F97316"/>
@@ -16,10 +14,6 @@ export default function LanguageNav() {
             HireMe <span className="text-orange-500">AI</span>
           </span>
         </a>
-
-        {/* Google Translate widget */}
-        <div id="google_translate_element" />
-
       </div>
     </nav>
   )
