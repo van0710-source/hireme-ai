@@ -26,6 +26,7 @@ interface QuotaInfo {
   freeRemaining: number
   credits: number
   paidUsesRemaining: number
+  totalUsed: number
   status: 'free' | 'credits' | 'blocked'
 }
 
@@ -131,35 +132,78 @@ export default function HomePage() {
                 One resume. Any company.<br />Tailored in seconds.
               </p>
 
-              {/* Quota badge */}
+               {/* Quota card */}
               {quota && (
-                <div className="mt-6">
-                  {quota.status === 'free' && (
-                    <div className="inline-flex items-center gap-2 rounded-full bg-emerald-50 border border-emerald-100 px-4 py-2">
-                      <span className="text-emerald-500">✦</span>
-                      <span className="text-sm font-medium text-emerald-700">
-                        {quota.freeRemaining} free {quota.freeRemaining === 1 ? 'generation' : 'generations'} remaining
+                <div className="mt-6 rounded-2xl border border-gray-100 bg-white shadow-sm p-4 max-w-sm">
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Your Account</span>
+                    {quota.status !== 'blocked' && (
+                      <button
+                        onClick={() => setShowPaywall(true)}
+                        className="text-xs text-orange-500 hover:text-orange-600 font-medium transition-colors"
+                      >
+                        Buy more →
+                      </button>
+                    )}
+                  </div>
+
+                  <div className="space-y-2">
+                    {/* Free quota */}
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-gray-500">Free generations</span>
+                      <span className="text-xs font-semibold text-gray-700">
+                        {Math.min(quota.totalUsed, 3)}/3 used
                       </span>
                     </div>
-                  )}
-                  {quota.status === 'credits' && (
-                    <div className="inline-flex items-center gap-2 rounded-full bg-blue-50 border border-blue-100 px-4 py-2">
-                      <span className="text-blue-500">✦</span>
-                      <span className="text-sm font-medium text-blue-700">
-                        {quota.paidUsesRemaining} {quota.paidUsesRemaining === 1 ? 'generation' : 'generations'} from credits
+
+                    {/* Credits */}
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-gray-500">Credits balance</span>
+                      <span className="text-xs font-semibold text-gray-700">
+                        {quota.credits} credits
                       </span>
                     </div>
-                  )}
-                  {quota.status === 'blocked' && (
-                    <button
-                      onClick={() => setShowPaywall(true)}
-                      className="inline-flex items-center gap-2 rounded-full bg-orange-500 px-4 py-2 text-sm font-medium text-white hover:bg-orange-600 transition-colors"
-                    >
-                      Add credits to continue →
-                    </button>
-                  )}
+
+                    {/* Paid generations */}
+                    {quota.paidUsesRemaining > 0 && (
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs text-gray-500">Paid generations left</span>
+                        <span className="text-xs font-semibold text-blue-600">
+                          {quota.paidUsesRemaining} remaining
+                        </span>
+                      </div>
+                    )}
+
+                    {/* Status */}
+                    <div className="pt-2 border-t border-gray-100">
+                      {quota.status === 'free' && (
+                        <div className="flex items-center gap-1.5">
+                          <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+                          <span className="text-xs text-emerald-600 font-medium">
+                            {quota.freeRemaining} free {quota.freeRemaining === 1 ? 'generation' : 'generations'} remaining
+                          </span>
+                        </div>
+                      )}
+                      {quota.status === 'credits' && (
+                        <div className="flex items-center gap-1.5">
+                          <span className="h-1.5 w-1.5 rounded-full bg-blue-400" />
+                          <span className="text-xs text-blue-600 font-medium">
+                            Active · {quota.paidUsesRemaining} generations from credits
+                          </span>
+                        </div>
+                      )}
+                      {quota.status === 'blocked' && (
+                        <button
+                          onClick={() => setShowPaywall(true)}
+                          className="w-full rounded-xl bg-orange-500 py-2 text-xs font-semibold text-white hover:bg-orange-600 transition-colors"
+                        >
+                          Add credits to continue →
+                        </button>
+                      )}
+                    </div>
+                  </div>
                 </div>
-              )}
+         )}
             </div>
 
             {/* Right: decorative card */}
