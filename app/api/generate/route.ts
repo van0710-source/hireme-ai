@@ -31,6 +31,7 @@ ${atsSection}
 - Quantify achievements wherever possible (%, $, time saved, team size)
 - Avoid passive constructions, filler phrases, and vague claims
 - Never use: "responsible for", "worked on", "helped with", "assisted in"
+- NEVER change the candidate's employer names, company names, or job titles — only rewrite the description content
 - No Chinese-style expressions translated directly to English
 
 ## Output Format
