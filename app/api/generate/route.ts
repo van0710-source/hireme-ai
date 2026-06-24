@@ -18,7 +18,7 @@ Tailor ALL output specifically for this target:
 - Rewrite resume bullet points using language and keywords common in this company's job postings
 - Highlight skills and experiences most relevant to this specific target
 - Frame achievements in terms this company's recruiters and hiring managers care about
-- Interview questions must reflect this company's known interview style and focus areas
+- - Interview questions must reflect this company's known interview style and focus areas (provide 10 questions total)
 - Output content should differ substantially (≥50%) from a generic, non-targeted version
 `
     : ''
@@ -45,7 +45,7 @@ Return a JSON object with this exact structure (no markdown fences, raw JSON onl
 }
 
 The "ats_keywords" field must contain 5 high-impact keywords from the target industry / company.
-The "interview_questions" array must contain exactly 5 questions.
+The "interview_questions" array must contain exactly 10 questions.
 All content must be in English.`
 }
 
