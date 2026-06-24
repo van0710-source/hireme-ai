@@ -48,8 +48,7 @@ export default function TermsPage() {
             after payment.
           </li>
           <li>
-            <strong>Credits pack ($20)</strong> — 200 credits; each generation costs 15
-            credits (~13 generations total).
+              <strong>Credits pack ($20)</strong> — 200 credits; each generation costs 8 credits (~25 generations total).
           </li>
         </ul>
         <p>

@@ -5,7 +5,7 @@ import { supabaseAdmin } from './supabase-server'
 
 export const FREE_USES = 3
 export const CREDITS_PER_PURCHASE = 200
-export const CREDITS_PER_USE = 15
+export const CREDITS_PER_USE = 8
 
 export interface UsageRecord {
   device_id: string

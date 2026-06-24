@@ -50,7 +50,6 @@ const creemRes = await fetch(`${creemBaseUrl}/v1/checkouts`, {
       body: JSON.stringify({
         product_id:   productId,
         success_url:  `${appUrl}/payment/success?device=${deviceId}&type=${productType}`,
-        cancel_url:   `${appUrl}/payment/cancel`,
         metadata: {
           device_id:    deviceId,
           product_type: productType,

@@ -29,7 +29,7 @@ const PLANS: PlanOption[] = [
     id: 'credits',
     label: 'Credits pack',
     price: '$20',
-    description: '200 credits · ~13 generations',
+    description: '200 credits · ~25 generations',
     badge: 'Best value',
   },
 ]
