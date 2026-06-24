@@ -8,14 +8,38 @@ import { isValidDeviceId, isValidProductType } from '@/lib/sanitize'
 
 export const runtime = 'nodejs'
 
+function verifyCreemSignature(
+  payload: string,
+  header: string | null,
+  secret: string
+): boolean {
+  if (!header) return false
+  if (!secret) return false
+
+  try {
+    const expected = crypto
+      .createHmac('sha256', secret)
+      .update(payload)
+      .digest('hex')
+
+    return crypto.timingSafeEqual(
+      Buffer.from(expected, 'hex'),
+      Buffer.from(header, 'hex')
+    )
+  } catch {
+    return false
+  }
+}
+
 export async function POST(req: NextRequest) {
   const rawBody = await req.text()
   const sigHeader = req.headers.get('creem-signature')
   const webhookSecret = process.env.CREEM_WEBHOOK_SECRET ?? ''
 
-  // Temporarily disabled for debugging — log signature format
-  console.log('[webhook/creem] sig header:', sigHeader)
-  console.log('[webhook/creem] secret length:', webhookSecret.length)
+  if (!verifyCreemSignature(rawBody, sigHeader, webhookSecret)) {
+    console.warn('[webhook/creem] signature verification failed')
+    return NextResponse.json({ error: 'Invalid signature' }, { status: 401 })
+  }
 
   let event: Record<string, unknown>
   try {
@@ -23,8 +47,6 @@ export async function POST(req: NextRequest) {
   } catch {
     return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 })
   }
-
-  console.log('[webhook/creem] event keys:', Object.keys(event))
 
   const eventType = (event.type ?? event.eventType) as string
   if (eventType !== 'payment.succeeded' && eventType !== 'checkout.completed') {
@@ -39,8 +61,6 @@ export async function POST(req: NextRequest) {
   const deviceId    = (metadata.device_id ?? metadata.deviceId) as string
   const productType = (metadata.product_type ?? metadata.productType) as string
   const amountCents = (orderData.amount ?? data.amount ?? data.total ?? 0) as number
-
-  console.log('[webhook/creem] parsed:', { paymentId, deviceId, productType })
 
   if (!paymentId || !isValidDeviceId(deviceId) || !isValidProductType(productType)) {
     console.error('[webhook/creem] missing or invalid fields', { paymentId, deviceId, productType })
