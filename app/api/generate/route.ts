@@ -18,7 +18,7 @@ Tailor ALL output specifically for this target:
 - Rewrite resume bullet points using language and keywords common in this company's job postings
 - Highlight skills and experiences most relevant to this specific target
 - Frame achievements in terms this company's recruiters and hiring managers care about
-- - Interview questions must reflect this company's known interview style and focus areas (provide 10 questions total)
+- Interview questions must reflect this company's known interview style and focus areas (provide 10 questions total)
 - Output content should differ substantially (≥50%) from a generic, non-targeted version
 `
     : ''
@@ -31,14 +31,14 @@ ${atsSection}
 - Quantify achievements wherever possible (%, $, time saved, team size)
 - Avoid passive constructions, filler phrases, and vague claims
 - Never use: "responsible for", "worked on", "helped with", "assisted in"
-- - NEVER change the candidate's employer names, company names, or job titles — only rewrite the description content
+- NEVER change the candidate's employer names, company names, or job titles — only rewrite the description content
 - Every single bullet point in the work experience MUST be fully rewritten to reflect the target industry or company context. Do NOT simply append industry words at the end of an existing bullet. The rewrite must be substantive and show genuine domain alignment.
 - No Chinese-style expressions translated directly to English
 
 ## Output Format
 Return a JSON object with this exact structure (no markdown fences, raw JSON only):
 {
-  "optimized_resume": "Full rewritten resume text with clear sections",
+  "optimized_resume": "Full rewritten resume text. Use \\n to separate lines and \\n\\n to separate sections. Each bullet point must start on a new line with •",
   "key_improvements": ["improvement 1", "improvement 2", "improvement 3"],
   "interview_questions": [
     { "question": "Q text", "tip": "How to answer it for this target" }
@@ -46,15 +46,14 @@ Return a JSON object with this exact structure (no markdown fences, raw JSON onl
   "ats_keywords": ["keyword1", "keyword2", "keyword3", "keyword4", "keyword5"]
 }
 
-The "ats_keywords" field must contain 5 high-impact keywords with a balanced mix: ideally 2-3 technical stack keywords (languages, frameworks, cloud tools) and 2-3 industry/domain keywords. Never use more than 3 of either type. Industry/domain keywords MUST be real terminology that recruiters and ATS systems in that specific industry actually search for — not generic phrases like "cross-functional collaboration" or "public service". Use precise professional terms (e.g., for government: FedRAMP, FISMA, Section 508; for healthcare: HIPAA, FHIR, HL7; for fintech: PCI-DSS, SOC2, KYC).
-The "interview_questions" array must contain exactly 10 questions, structured as follows:
-- - 5 technical questions (system design, coding, architecture, or domain-specific). Calibrate difficulty to match the seniority level inferred from the resume (junior, mid, senior, staff). For senior and above, coding questions should be medium-to-hard difficulty (not trivial array manipulation). For any coding or algorithm questions, the tip must explain step-by-step how to walk through the solution on a whiteboard in plain conversational language, not just name the algorithm.
-- - 4 behavioral questions using STAR method. Each question MUST cover a different dimension — choose exactly one from each: (1) leadership or team management, (2) conflict or disagreement resolution, (3) failure or mistake and recovery, (4) cross-functional collaboration or stakeholder management. Tips must guide HOW to tell the story naturally, not just what to mention.
-- 1 culture fit question (why this company, values alignment, or motivation). Tip must encourage genuine, specific, and researched answers.
-
 The "key_improvements" array must contain exactly 5 items.
 
-The "ats_keywords" field must contain 5 high-impact keywords with a balanced mix: ideally 2-3 technical stack keywords (languages, frameworks, cloud tools) and 2-3 industry/domain keywords. Never use more than 3 of either type.
+The "ats_keywords" field must contain 5 high-impact keywords with a balanced mix: ideally 2-3 technical stack keywords (languages, frameworks, cloud tools) and 2-3 industry/domain keywords. Never use more than 3 of either type. Industry/domain keywords MUST be real terminology that recruiters and ATS systems in that specific industry actually search for — not generic phrases like "cross-functional collaboration" or "public service". Use precise professional terms (e.g., for government: FedRAMP, FISMA, Section 508; for healthcare: HIPAA, FHIR, HL7; for fintech: PCI-DSS, SOC2, KYC).
+
+The "interview_questions" array must contain exactly 10 questions, structured as follows:
+- 5 technical questions (system design, coding, architecture, or domain-specific). Calibrate difficulty to match the seniority level inferred from the resume (junior, mid, senior, staff). For senior and above, coding questions should be medium-to-hard difficulty (not trivial array manipulation). For any coding or algorithm questions, the tip must explain step-by-step how to walk through the solution on a whiteboard in plain conversational language, not just name the algorithm.
+- 4 behavioral questions using STAR method. Each question MUST cover a different dimension — choose exactly one from each: (1) leadership or team management, (2) conflict or disagreement resolution, (3) failure or mistake and recovery, (4) cross-functional collaboration or stakeholder management. Tips must guide HOW to tell the story naturally, not just what to mention.
+- 1 culture fit question (why this company, values alignment, or motivation). Tip must encourage genuine, specific, and researched answers.
 
 All content must be in English.`
 }
