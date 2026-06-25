@@ -19,6 +19,9 @@ function SuccessContent() {
     // Replace current history entry to prevent back-button returning to Creem
     window.history.replaceState(null, '', '/payment/success')
   }, [])
+
+  useEffect(() => {
+    const interval = setInterval(() => {
       setCount(c => {
         if (c <= 1) {
           clearInterval(interval)
