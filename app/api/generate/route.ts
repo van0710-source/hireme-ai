@@ -3,8 +3,9 @@
 // Body: { resume: string, deviceId: string, targetCompany?: string }
 
 import { NextRequest, NextResponse } from 'next/server'
-import { getUsage, canGenerate, incrementUsage } from '@/lib/usage'
+import { getUsage, canGenerate, incrementUsage, getUserUsage, incrementUserUsage } from '@/lib/usage'
 import { sanitizeText, isValidDeviceId } from '@/lib/sanitize'
+import { getSession } from '@/lib/session'
 
 export const runtime = 'nodejs'
 
@@ -89,9 +90,15 @@ export async function POST(req: NextRequest) {
 
   const targetCompany = sanitizeText(rawTarget, 100)
 
+  // Check if user is logged in — use account quota, otherwise device quota
+  const session = getSession(req)
+  const isLoggedIn = !!session
+
   let usage
   try {
-    usage = await getUsage(deviceId as string)
+    usage = isLoggedIn
+      ? await getUserUsage(session!.userId)
+      : await getUsage(deviceId as string)
   } catch (err) {
     console.error('[generate] getUsage failed:', err)
     return NextResponse.json({ error: 'Failed to check quota' }, { status: 500 })
@@ -155,7 +162,11 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    await incrementUsage(deviceId as string)
+    if (isLoggedIn) {
+      await incrementUserUsage(session!.userId)
+    } else {
+      await incrementUsage(deviceId as string)
+    }
   } catch (err) {
     console.error('[generate] incrementUsage failed:', err)
   }

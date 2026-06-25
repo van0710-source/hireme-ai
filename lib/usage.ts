@@ -91,3 +91,36 @@ export async function addPaymentCredits(
       .eq('device_id', deviceId)
   }
 }
+// ── User account quota (for logged-in users) ──────────────────────────────────
+
+export async function getUserUsage(userId: string): Promise<UsageRecord & { id: string }> {
+  const { data, error } = await supabaseAdmin
+    .from('users')
+    .select('id, total_used, credits')
+    .eq('id', userId)
+    .single()
+
+  if (error) throw new Error(`DB read error: ${error.message}`)
+  return { device_id: userId, ...data }
+}
+
+export async function incrementUserUsage(userId: string): Promise<void> {
+  const usage = await getUserUsage(userId)
+
+  if (usage.total_used < FREE_USES) {
+    await supabaseAdmin
+      .from('users')
+      .update({ total_used: usage.total_used + 1 })
+      .eq('id', userId)
+  } else if (usage.credits >= CREDITS_PER_USE) {
+    await supabaseAdmin
+      .from('users')
+      .update({
+        total_used: usage.total_used + 1,
+        credits: usage.credits - CREDITS_PER_USE,
+      })
+      .eq('id', userId)
+  } else {
+    throw new Error('No remaining quota')
+  }
+}

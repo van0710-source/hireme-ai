@@ -1,22 +1,29 @@
 // app/api/usage/route.ts
 // GET /api/usage?deviceId=xxx
-// Returns current quota status for the device
+// Returns current quota status — uses account quota if logged in, device quota otherwise
 
 import { NextRequest, NextResponse } from 'next/server'
-import { getUsage, canGenerate, quotaStatus, FREE_USES, CREDITS_PER_USE } from '@/lib/usage'
+import { getUsage, getUserUsage, canGenerate, quotaStatus, FREE_USES, CREDITS_PER_USE } from '@/lib/usage'
 import { isValidDeviceId } from '@/lib/sanitize'
+import { getSession } from '@/lib/session'
 
 export const runtime = 'nodejs'
 
 export async function GET(req: NextRequest) {
-  const deviceId = req.nextUrl.searchParams.get('deviceId')
-
-  if (!isValidDeviceId(deviceId)) {
-    return NextResponse.json({ error: 'Invalid device ID' }, { status: 400 })
-  }
+  const session = getSession(req)
 
   try {
-    const usage = await getUsage(deviceId)
+    let usage
+    if (session) {
+      usage = await getUserUsage(session.userId)
+    } else {
+      const deviceId = req.nextUrl.searchParams.get('deviceId')
+      if (!isValidDeviceId(deviceId)) {
+        return NextResponse.json({ error: 'Invalid device ID' }, { status: 400 })
+      }
+      usage = await getUsage(deviceId)
+    }
+
     const status = quotaStatus(usage)
     const freeRemaining = Math.max(0, FREE_USES - usage.total_used)
     const paidUsesRemaining = Math.floor(usage.credits / CREDITS_PER_USE)
