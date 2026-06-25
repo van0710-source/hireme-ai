@@ -372,11 +372,30 @@ export default function HomePage() {
             {/* Resume: full width */}
             <div className="lg:col-span-3">
               <ResultCard title="Optimized Resume" accent="orange">
-                <div className="text-sm text-gray-700 leading-relaxed font-sans space-y-3">
+<div className="text-sm text-gray-700 leading-relaxed font-sans space-y-1">
                   {result.optimized_resume
                     .split('\n')
+                    .reduce((acc: string[], line, i, arr) => {
+                      // Merge orphaned bullet symbols with next line
+                      if (line.trim() === '•' && arr[i + 1]) {
+                        acc.push('• ' + arr[i + 1].trim())
+                        arr[i + 1] = ''
+                      } else if (line !== '') {
+                        acc.push(line)
+                      }
+                      return acc
+                    }, [])
                     .map((line, i) => (
-                      <p key={i} className={line.trim() === '' ? 'mt-2' : ''}>
+                      <p
+                        key={i}
+                        className={
+                          line.trim() === ''
+                            ? 'h-3'
+                            : line.startsWith('•')
+                            ? 'pl-3'
+                            : ''
+                        }
+                      >
                         {line || '\u00A0'}
                       </p>
                     ))}
