@@ -40,6 +40,10 @@ export default function PaywallModal({ deviceId, onClose }: Props) {
   const [error, setError] = useState('')
 
   async function handleCheckout() {
+    const planLabel = selected === 'single' ? 'Single use · $1' : 'Credits Pack · $20 (~25 generations)'
+    const confirmed = window.confirm(`Confirm purchase: ${planLabel}`)
+    if (!confirmed) return
+
     setLoading(true)
     setError('')
     try {

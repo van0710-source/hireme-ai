@@ -372,9 +372,15 @@ export default function HomePage() {
             {/* Resume: full width */}
             <div className="lg:col-span-3">
               <ResultCard title="Optimized Resume" accent="orange">
-                <pre className="whitespace-pre-wrap text-sm text-gray-700 leading-relaxed font-sans">
-                  {result.optimized_resume}
-                </pre>
+                <div className="text-sm text-gray-700 leading-relaxed font-sans space-y-3">
+                  {result.optimized_resume
+                    .split('\n')
+                    .map((line, i) => (
+                      <p key={i} className={line.trim() === '' ? 'mt-2' : ''}>
+                        {line || '\u00A0'}
+                      </p>
+                    ))}
+                </div>
                 <button
                   onClick={() => navigator.clipboard.writeText(result.optimized_resume)}
                   className="mt-4 rounded-lg border border-gray-200 px-4 py-1.5 text-xs font-medium text-gray-500 hover:bg-gray-50 transition-colors"

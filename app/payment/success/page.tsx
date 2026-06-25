@@ -16,7 +16,9 @@ function SuccessContent() {
       : '200 credits have been added to your account.'
 
   useEffect(() => {
-    const interval = setInterval(() => {
+    // Replace current history entry to prevent back-button returning to Creem
+    window.history.replaceState(null, '', '/payment/success')
+  }, [])
       setCount(c => {
         if (c <= 1) {
           clearInterval(interval)

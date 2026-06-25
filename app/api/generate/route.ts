@@ -31,7 +31,8 @@ ${atsSection}
 - Quantify achievements wherever possible (%, $, time saved, team size)
 - Avoid passive constructions, filler phrases, and vague claims
 - Never use: "responsible for", "worked on", "helped with", "assisted in"
-- NEVER change the candidate's employer names, company names, or job titles — only rewrite the description content
+- - NEVER change the candidate's employer names, company names, or job titles — only rewrite the description content
+- Every single bullet point in the work experience MUST be fully rewritten to reflect the target industry or company context. Do NOT simply append industry words at the end of an existing bullet. The rewrite must be substantive and show genuine domain alignment.
 - No Chinese-style expressions translated directly to English
 
 ## Output Format
