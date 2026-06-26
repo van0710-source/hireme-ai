@@ -7,6 +7,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase-server'
 import { generateVerificationCode } from '@/lib/auth'
 import { sanitizeText } from '@/lib/sanitize'
+import { checkRateLimit, getClientIp } from '@/lib/rate-limit'
 
 export const runtime = 'nodejs'
 
@@ -16,6 +17,15 @@ function isValidEmail(email: unknown): email is string {
 }
 
 export async function POST(req: NextRequest) {
+  // IP-level: max 5 registration attempts per 10 minutes
+  const ip = getClientIp(req)
+  if (!checkRateLimit(`register:${ip}`, 5, 10 * 60 * 1000)) {
+    return NextResponse.json(
+      { error: 'Too many requests. Please try again later.' },
+      { status: 429 }
+    )
+  }
+
   let body: unknown
   try {
     body = await req.json()
@@ -28,6 +38,21 @@ export async function POST(req: NextRequest) {
 
   if (!isValidEmail(email)) {
     return NextResponse.json({ error: 'Invalid email address' }, { status: 400 })
+  }
+
+  // Email-level: max 3 verification emails per 10 minutes (uses existing table)
+  const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000).toISOString()
+  const { count: recentCount } = await supabaseAdmin
+    .from('verification_codes')
+    .select('id', { count: 'exact', head: true })
+    .eq('email', email)
+    .gte('created_at', tenMinutesAgo)
+
+  if ((recentCount ?? 0) >= 3) {
+    return NextResponse.json(
+      { error: 'Too many verification emails sent. Please wait 10 minutes before trying again.' },
+      { status: 429 }
+    )
   }
 
   // Check if email already registered

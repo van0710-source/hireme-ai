@@ -34,8 +34,6 @@ export async function POST(req: NextRequest) {
   if (!productId) {
     return NextResponse.json({ error: 'Product not configured' }, { status: 500 })
   }
-console.log('[create-checkout] productType:', productType, 'productId:', PRODUCT_MAP[productType])
-  console.log('[create-checkout] CREEM_API_KEY exists:', !!process.env.CREEM_API_KEY)
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://hireme-ai.com'
 // In preview, use the request origin instead
 const requestOrigin = req.headers.get('origin') ?? appUrl
