@@ -75,16 +75,24 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <div className="flex-1">{children}</div>
 
         {/* ── Footer ── */}
-        <footer className="border-t border-gray-100 bg-white">
-          <div className="mx-auto max-w-5xl px-6 py-6 flex flex-col sm:flex-row items-center justify-between gap-3">
-            <p className="text-xs text-gray-400">
-              © {new Date().getFullYear()} HireMe AI · AI-generated content is for reference only
-            </p>
-            <div className="flex gap-4 text-xs text-gray-400">
-              <a href="/privacy" className="hover:text-gray-600 transition-colors">Privacy</a>
-              <a href="/terms" className="hover:text-gray-600 transition-colors">Terms</a>
-              <a href="mailto:contact@hireme-ai.com" className="hover:text-gray-600 transition-colors">Contact</a>
+        <footer className="border-t border-[#E5E0D8] bg-white">
+          <div className="mx-auto max-w-6xl px-6 py-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="flex items-center gap-6">
+              <span className="text-[14px] font-extrabold tracking-tight text-gray-900">
+                hireme<span className="text-orange-500">.</span>ai
+              </span>
+              <p className="text-[11px] text-gray-400 hidden sm:block">
+                © {new Date().getFullYear()} HireMe AI · AI-generated content is for reference only
+              </p>
             </div>
+            <div className="flex gap-5">
+              <a href="/privacy" className="text-[11px] text-gray-400 hover:text-gray-700 transition-colors">Privacy</a>
+              <a href="/terms" className="text-[11px] text-gray-400 hover:text-gray-700 transition-colors">Terms</a>
+              <a href="mailto:contact@hireme-ai.com" className="text-[11px] text-gray-400 hover:text-gray-700 transition-colors">Contact</a>
+            </div>
+            <p className="text-[11px] text-gray-400 sm:hidden text-center">
+              © {new Date().getFullYear()} HireMe AI
+            </p>
           </div>
         </footer>
 
