@@ -120,19 +120,18 @@ export default function HomePage() {
                 <span className="text-[10px] font-bold tracking-widest text-orange-700 uppercase">AI-Powered Resume Tailoring</span>
               </div>
 
-              <h1 className="text-[38px] sm:text-[44px] lg:text-[50px] font-extrabold leading-[1.06] tracking-tight text-gray-900 mb-5">
+              <h1 className="text-[28px] sm:text-[38px] lg:text-[50px] font-extrabold leading-[1.06] tracking-tight text-gray-900 mb-5">
                 Land the interview<br />
                 at <span className="text-orange-500">any company.</span>
               </h1>
 
               <p className="text-[14px] text-gray-500 leading-relaxed mb-8 max-w-[340px]">
-                Paste your resume. Tell us where you&rsquo;re applying.<br className="hidden sm:block" />
-                Get a perfectly tailored version — ATS-optimized<br className="hidden sm:block" />
-                and interview-ready — in seconds.
+                Paste your resume. Tell us where you&rsquo;re applying.{' '}
+                Get a perfectly tailored version — ATS-optimized and interview-ready — in seconds.
               </p>
 
               {quota && (
-                <div className="bg-white border border-[#E5E0D8] rounded-xl p-4 max-w-sm">
+                <div className="bg-white border border-[#E5E0D8] rounded-xl p-4 sm:max-w-sm">
                   <div className="flex items-center justify-between mb-3 pb-3 border-b border-[#F0EBE0]">
                     <span className="text-[9px] font-bold tracking-[0.1em] text-gray-400 uppercase">Your Account</span>
                     {quota.status !== 'blocked' && (
@@ -205,9 +204,8 @@ export default function HomePage() {
                     value={resume}
                     onChange={e => setResume(e.target.value)}
                     placeholder="Paste your resume here — work experience, skills, education…"
-                    rows={10}
                     maxLength={8000}
-                    className="w-full resize-y rounded-xl border border-[#E5E0D8] bg-[#FAFAF8] px-4 py-3 text-[13px] text-gray-800 placeholder-gray-300 focus:border-orange-400 focus:outline-none focus:ring-2 focus:ring-orange-100 transition-colors"
+                    className="w-full resize-y rounded-xl border border-[#E5E0D8] bg-[#FAFAF8] px-4 py-3 text-[13px] text-gray-800 placeholder-gray-300 focus:border-orange-400 focus:outline-none focus:ring-2 focus:ring-orange-100 transition-colors min-h-[140px] sm:min-h-[220px]"
                   />
                   <p className="mt-1 text-right text-[10px] text-gray-300">{resume.length}/8000</p>
                 </div>
@@ -353,7 +351,7 @@ export default function HomePage() {
       {/* ── Results ── */}
       {result && (
         <section id="results" className="mx-auto max-w-6xl px-6 py-14 space-y-6">
-          <div className="flex items-start justify-between flex-wrap gap-3">
+          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
             <div>
               <p className="text-[9px] font-bold tracking-[0.14em] text-orange-500 uppercase mb-1">Your results</p>
               <h2 className="text-[22px] font-extrabold tracking-tight text-gray-900">Your tailored resume is ready.</h2>

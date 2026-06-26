@@ -37,7 +37,7 @@ export default function PaywallModal({ deviceId, onClose }: Props) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/35 px-4">
-      <div className="relative w-full max-w-md rounded-[20px] bg-white dark:bg-[#1c1a18] border border-[#f0ece6] dark:border-[#2e2b27] p-7 shadow-lg">
+      <div className="relative w-full max-w-md rounded-[20px] bg-white dark:bg-[#1c1a18] border border-[#f0ece6] dark:border-[#2e2b27] p-5 sm:p-7 shadow-lg">
 
         {/* Close button */}
         {onClose && (
