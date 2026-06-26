@@ -123,20 +123,12 @@ export default function LanguageNav() {
                 )}
               </div>
             ) : (
-              <>
-                <button
-                  onClick={() => { setAuthMode('login'); setShowAuth(true) }}
-                  className="hidden sm:block text-[13px] font-medium text-gray-600 hover:text-gray-900 transition-colors px-2 py-1.5"
-                >
-                  Sign in
-                </button>
-                <button
-                  onClick={() => { setAuthMode('register'); setShowAuth(true) }}
-                  className="rounded-lg bg-orange-500 px-4 py-2 text-[13px] font-bold text-white hover:bg-orange-600 transition-colors"
-                >
-                  Get started free
-                </button>
-              </>
+              <button
+                onClick={() => { setAuthMode('login'); setShowAuth(true) }}
+                className="text-[13px] font-medium text-gray-600 hover:text-gray-900 transition-colors px-2 py-1.5"
+              >
+                Sign in
+              </button>
             )}
 
             {/* Hamburger (mobile) */}
@@ -168,7 +160,7 @@ export default function LanguageNav() {
                 <div className="h-px bg-[#E5E0D8] my-2" />
                 <button
                   onClick={() => { setAuthMode('login'); setShowAuth(true); setShowMobileMenu(false) }}
-                  className="block py-2.5 text-[14px] text-gray-700 font-medium w-full text-left"
+                  className="block py-2.5 text-[14px] text-gray-600 font-medium w-full text-left"
                 >
                   Sign in
                 </button>
