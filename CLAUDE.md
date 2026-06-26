@@ -17,9 +17,9 @@
 - P0 ✅ Resend 域名验证 + 注册登录测试完成
 - P1 ✅ PaywallModal 升级完成
 - P2 ✅ 简历导出（复制体验优化）完成
-- P3 移动端适配 ← 下一项
-- P4 Privacy/Terms 页面样式
-- P5 Vercel Authentication 重新开启
+- P3 ✅ 移动端适配完成
+- P4 ✅ Privacy/Terms 页面样式完成
+- P5 ✅ Vercel Authentication — 保持关闭（网站已公开上线）
 
 ## 已知待修复
 - 登录后账户卡片首次加载显示设备额度而非用户额度（刷新后正常）
