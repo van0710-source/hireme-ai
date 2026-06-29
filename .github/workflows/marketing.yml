@@ -56,8 +56,6 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - run: npm install @supabase/supabase-js ws
-        working-directory: marketing/agents
       - run: node blog-agent.js
         working-directory: marketing/agents
 
@@ -74,8 +72,6 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - run: npm install @supabase/supabase-js ws
-        working-directory: marketing/agents
       - run: BLUESKY_MODE=generate node bluesky-agent.js
         working-directory: marketing/agents
 
@@ -92,8 +88,6 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - run: npm install @supabase/supabase-js ws
-        working-directory: marketing/agents
       - run: BLUESKY_MODE=publish node bluesky-agent.js
         working-directory: marketing/agents
 
@@ -110,8 +104,6 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - run: npm install @supabase/supabase-js ws
-        working-directory: marketing/agents
       # 随机延迟0-30分钟，模拟人类不规律行为
       - name: Random delay
         run: sleep $((RANDOM % 1800))
@@ -131,8 +123,6 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - run: npm install @supabase/supabase-js ws
-        working-directory: marketing/agents
       - run: node analysis-agent.js
         working-directory: marketing/agents
 
