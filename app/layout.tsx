@@ -12,28 +12,44 @@ const jakarta = Plus_Jakarta_Sans({
 
 export const metadata: Metadata = {
   title: {
-    default: 'HireMe AI — Paste your resume. Get the interview that fits.',
-    template: '%s · HireMe AI',
+    default: 'HireMe-AI — Tailor Your Resume for Any Company in Seconds',
+    template: '%s · HireMe-AI',
   },
   description:
-    'One resume. Any company. Tailored in seconds. AI-powered resume optimisation and interview prep — no sign-up required.',
-  metadataBase: new URL('https://hireme-ai.com'),
+    'Paste your resume, name your target company. HireMe-AI generates a tailored resume, ATS keywords, and interview questions in seconds — free to try, no sign-up required.',
+  keywords: [
+    'AI resume tailor', 'resume tailoring', 'ATS resume optimizer',
+    'tailor resume for job', 'AI resume builder', 'resume for specific company',
+    'interview preparation AI', 'job application AI', 'resume optimization',
+  ],
+  metadataBase: new URL('https://www.hireme-ai.com'),
+  alternates: { canonical: 'https://www.hireme-ai.com' },
   openGraph: {
     type: 'website',
     locale: 'en_US',
-    url: 'https://hireme-ai.com',
-    siteName: 'HireMe AI',
-    title: 'HireMe AI — Paste your resume. Get the interview that fits.',
-    description: 'One resume. Any company. Tailored in seconds.',
+    url: 'https://www.hireme-ai.com',
+    siteName: 'HireMe-AI',
+    title: 'HireMe-AI — Tailor Your Resume for Any Company in Seconds',
+    description:
+      'Paste your resume, name your target company. Get a tailored resume, ATS keywords, and interview questions in seconds.',
+    images: [{ url: '/og-image.png', width: 1200, height: 630, alt: 'HireMe-AI' }],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'HireMe-AI — Tailor Your Resume for Any Company in Seconds',
+    description: 'AI-powered resume tailoring + ATS optimization + interview prep. Free to try.',
+    images: ['/og-image.png'],
   },
 }
 
-const productSchema = {
+const webAppSchema = {
   '@context': 'https://schema.org',
-  '@type': 'Product',
-  name: 'HireMe AI',
-  description: 'AI-powered resume optimisation and interview preparation.',
-  url: 'https://hireme-ai.com',
+  '@type': 'WebApplication',
+  name: 'HireMe-AI',
+  url: 'https://www.hireme-ai.com',
+  description: 'AI-powered resume tailoring and interview preparation. Paste your resume, name your target company — get a tailored resume, ATS keywords, and interview questions in seconds.',
+  applicationCategory: 'BusinessApplication',
+  operatingSystem: 'Any',
   offers: [
     { '@type': 'Offer', name: 'Free tier', price: '0', priceCurrency: 'USD' },
     { '@type': 'Offer', name: 'Single use', price: '1.00', priceCurrency: 'USD' },
@@ -44,8 +60,8 @@ const productSchema = {
 const organizationSchema = {
   '@context': 'https://schema.org',
   '@type': 'Organization',
-  name: 'HireMe AI',
-  url: 'https://hireme-ai.com',
+  name: 'HireMe-AI',
+  url: 'https://www.hireme-ai.com',
   contactPoint: {
     '@type': 'ContactPoint',
     email: 'contact@hireme-ai.com',
@@ -59,7 +75,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <head>
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(productSchema) }}
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(webAppSchema) }}
         />
         <script
           type="application/ld+json"
