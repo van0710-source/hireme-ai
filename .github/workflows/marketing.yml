@@ -1,0 +1,155 @@
+name: Marketing Automation
+
+on:
+  schedule:
+    # 博客生产：每周一/周四 UTC 02:00
+    - cron: '0 2 * * 1,4'
+    # Bluesky 内容生成：每周日 UTC 10:00
+    - cron: '0 10 * * 0'
+    # Bluesky 发布：每日 UTC 22:00
+    - cron: '0 22 * * *'
+    # Reddit 监控：每小时（GitHub Actions 最小粒度）
+    - cron: '0 * * * *'
+    # 互动分析：每3天 UTC 08:00（用周一/周四/周日近似）
+    - cron: '0 8 * * 0,3,6'
+    # PM 周报：每周一 UTC 09:00
+    - cron: '0 9 * * 1'
+  # 支持手动触发测试
+  workflow_dispatch:
+    inputs:
+      agent:
+        description: 'Agent to run manually'
+        required: true
+        type: choice
+        options:
+          - blog
+          - bluesky-generate
+          - bluesky-publish
+          - reddit
+          - analysis
+          - pm
+
+env:
+  DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
+  RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+  SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+  SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+  BLUESKY_IDENTIFIER: ${{ secrets.BLUESKY_IDENTIFIER }}
+  BLUESKY_PASSWORD: ${{ secrets.BLUESKY_PASSWORD }}
+  REDDIT_CLIENT_ID: ${{ secrets.REDDIT_CLIENT_ID }}
+  REDDIT_CLIENT_SECRET: ${{ secrets.REDDIT_CLIENT_SECRET }}
+  REDDIT_USERNAME: ${{ secrets.REDDIT_USERNAME }}
+  REDDIT_PASSWORD: ${{ secrets.REDDIT_PASSWORD }}
+  MARKETING_EMAIL: ${{ secrets.MARKETING_EMAIL }}
+
+jobs:
+  # ── 博客生产（周一/周四）──
+  blog:
+    name: Blog Content Agent
+    runs-on: ubuntu-latest
+    if: |
+      (github.event_name == 'schedule' &&
+       (github.event.schedule == '0 2 * * 1,4')) ||
+      (github.event_name == 'workflow_dispatch' && inputs.agent == 'blog')
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: npm install @supabase/supabase-js
+        working-directory: marketing/agents
+      - run: node blog-agent.js
+        working-directory: marketing/agents
+
+  # ── Bluesky 内容生成（每周日）──
+  bluesky-generate:
+    name: Bluesky Generate Weekly Batch
+    runs-on: ubuntu-latest
+    if: |
+      (github.event_name == 'schedule' &&
+       github.event.schedule == '0 10 * * 0') ||
+      (github.event_name == 'workflow_dispatch' && inputs.agent == 'bluesky-generate')
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: npm install @supabase/supabase-js
+        working-directory: marketing/agents
+      - run: BLUESKY_MODE=generate node bluesky-agent.js
+        working-directory: marketing/agents
+
+  # ── Bluesky 发布（每日）──
+  bluesky-publish:
+    name: Bluesky Daily Publish
+    runs-on: ubuntu-latest
+    if: |
+      (github.event_name == 'schedule' &&
+       github.event.schedule == '0 22 * * *') ||
+      (github.event_name == 'workflow_dispatch' && inputs.agent == 'bluesky-publish')
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: npm install @supabase/supabase-js
+        working-directory: marketing/agents
+      - run: BLUESKY_MODE=publish node bluesky-agent.js
+        working-directory: marketing/agents
+
+  # ── Reddit 监控（每小时）──
+  reddit:
+    name: Reddit Monitor & Reply
+    runs-on: ubuntu-latest
+    if: |
+      (github.event_name == 'schedule' &&
+       github.event.schedule == '0 * * * *') ||
+      (github.event_name == 'workflow_dispatch' && inputs.agent == 'reddit')
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: npm install @supabase/supabase-js
+        working-directory: marketing/agents
+      # 随机延迟0-30分钟，模拟人类不规律行为
+      - name: Random delay
+        run: sleep $((RANDOM % 1800))
+      - run: node reddit-agent.js
+        working-directory: marketing/agents
+
+  # ── 互动分析（每3天）──
+  analysis:
+    name: Interaction Analysis & Email
+    runs-on: ubuntu-latest
+    if: |
+      (github.event_name == 'schedule' &&
+       github.event.schedule == '0 8 * * 0,3,6') ||
+      (github.event_name == 'workflow_dispatch' && inputs.agent == 'analysis')
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: npm install @supabase/supabase-js
+        working-directory: marketing/agents
+      - run: node analysis-agent.js
+        working-directory: marketing/agents
+
+  # ── PM 周报（每周一）──
+  pm:
+    name: PM Weekly Report
+    runs-on: ubuntu-latest
+    if: |
+      (github.event_name == 'schedule' &&
+       github.event.schedule == '0 9 * * 1') ||
+      (github.event_name == 'workflow_dispatch' && inputs.agent == 'pm')
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: npm install @supabase/supabase-js
+        working-directory: marketing/agents
+      - run: node pm-agent.js
+        working-directory: marketing/agents
