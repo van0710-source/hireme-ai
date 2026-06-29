@@ -78,8 +78,22 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <footer className="border-t border-[#E5E0D8] bg-white">
           <div className="mx-auto max-w-6xl px-6 py-6 flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-6">
-              <span className="text-[14px] font-extrabold tracking-tight text-gray-900">
-                hireme<span className="text-orange-500">.</span>ai
+              <span className="flex items-center gap-2">
+                <svg width="22" height="22" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <defs>
+                    <linearGradient id="logo-grad-footer" x1="0" y1="0" x2="40" y2="40" gradientUnits="userSpaceOnUse">
+                      <stop offset="0%" stopColor="#FF8C42"/>
+                      <stop offset="100%" stopColor="#E8590C"/>
+                    </linearGradient>
+                  </defs>
+                  <rect width="40" height="40" rx="10" fill="url(#logo-grad-footer)"/>
+                  <path d="M20 6 L32 15 L20 22 L8 15 Z" fill="white" opacity="0.9"/>
+                  <path d="M20 22 L32 15 L20 34 Z" fill="white" opacity="0.5"/>
+                  <path d="M20 22 L8 15 L20 34 Z" fill="white" opacity="0.3"/>
+                </svg>
+                <span className="text-[14px] font-extrabold tracking-tight text-gray-900">
+                  HireMe<span className="text-orange-500">-</span>AI
+                </span>
               </span>
               <p className="text-[11px] text-gray-400 hidden sm:block">
                 © {new Date().getFullYear()} HireMe AI · AI-generated content is for reference only

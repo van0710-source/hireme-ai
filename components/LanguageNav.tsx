@@ -61,8 +61,22 @@ export default function LanguageNav() {
         <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-3.5">
 
           {/* Logo */}
-          <a href="/" className="text-[15px] font-extrabold tracking-tight text-gray-900 shrink-0">
-            hireme<span className="text-orange-500">.</span>ai
+          <a href="/" className="flex items-center gap-2 shrink-0">
+            <svg width="26" height="26" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <linearGradient id="logo-grad" x1="0" y1="0" x2="40" y2="40" gradientUnits="userSpaceOnUse">
+                  <stop offset="0%" stopColor="#FF8C42"/>
+                  <stop offset="100%" stopColor="#E8590C"/>
+                </linearGradient>
+              </defs>
+              <rect width="40" height="40" rx="10" fill="url(#logo-grad)"/>
+              <path d="M20 6 L32 15 L20 22 L8 15 Z" fill="white" opacity="0.9"/>
+              <path d="M20 22 L32 15 L20 34 Z" fill="white" opacity="0.5"/>
+              <path d="M20 22 L8 15 L20 34 Z" fill="white" opacity="0.3"/>
+            </svg>
+            <span className="text-[15px] font-extrabold tracking-tight text-gray-900">
+              HireMe<span className="text-orange-500">-</span>AI
+            </span>
           </a>
 
           {/* Desktop nav links */}
