@@ -20,6 +20,22 @@
 - P3 ✅ 移动端适配完成
 - P4 ✅ Privacy/Terms 页面样式完成
 - P5 ✅ Vercel Authentication — 保持关闭（网站已公开上线）
+- P6 ✅ 营销自动化子项目（marketing/）搭建完成
+  - 5个 GitHub Actions Agent 运行中（博客/Bluesky/Reddit/分析/PM周报）
+  - Bluesky 账号 hireme-ai.bsky.social 已注册，Agent 自动预热中
+  - PM 周报邮件已确认正常发送
+- P7 ✅ Logo 更换（Diamond 图标 + HireMe-AI 品牌名）
+- P8 ✅ SEO 基础设施完成
+  - sitemap.xml、robots.txt、OG image 动态生成、Twitter Card
+  - WebApplication schema、所有页面 canonical URL
+  - Google Search Console 验证完成，sitemap 已提交
+  - Vercel 生产部署正确指向 claude-experiment 分支（hireme-ai-im92 项目）
+
+## 下一阶段工作
+- [ ] Reddit 账号（hiremeai-Junket）预热：每天在 r/resumes、r/cscareerquestions、r/jobs 手动回复，积累 100+ karma（预计 2-3 周）
+- [ ] Reddit karma 达标后：申请 Reddit API，在 GitHub Secrets 配置 REDDIT_CLIENT_ID / REDDIT_CLIENT_SECRET / REDDIT_USERNAME / REDDIT_PASSWORD
+- [ ] Blog 页面（/app/blog/page.tsx）接入 Supabase 动态内容，替换现有静态文章列表
+- [ ] 持续关注：Google Search Console 收录状态（提交后 1-2 周内 Google 开始抓取）
 
 ## 已知待修复
 - 登录后账户卡片首次加载显示设备额度而非用户额度（刷新后正常）
