@@ -149,7 +149,5 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - run: npm install @supabase/supabase-js ws
-        working-directory: marketing/agents
       - run: node pm-agent.js
         working-directory: marketing/agents
