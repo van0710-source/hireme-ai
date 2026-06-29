@@ -32,13 +32,11 @@ export const metadata: Metadata = {
     title: 'HireMe-AI — Tailor Your Resume for Any Company in Seconds',
     description:
       'Paste your resume, name your target company. Get a tailored resume, ATS keywords, and interview questions in seconds.',
-    images: [{ url: '/og-image.png', width: 1200, height: 630, alt: 'HireMe-AI' }],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'HireMe-AI — Tailor Your Resume for Any Company in Seconds',
     description: 'AI-powered resume tailoring + ATS optimization + interview prep. Free to try.',
-    images: ['/og-image.png'],
   },
 }
 

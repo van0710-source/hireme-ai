@@ -2,9 +2,10 @@
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Resources — Resume & Interview Tips',
+  title: 'Resume & Interview Tips — HireMe-AI Resources',
   description:
-    'Practical guides on resume writing, ATS optimisation, and interview preparation for job seekers.',
+    'Free guides on resume writing, ATS optimization, and interview preparation. Learn how to tailor your resume for any company and land more interviews.',
+  alternates: { canonical: 'https://www.hireme-ai.com/blog' },
 }
 
 const ARTICLES = [

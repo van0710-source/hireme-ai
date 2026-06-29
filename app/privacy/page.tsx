@@ -2,8 +2,9 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 
 export const metadata: Metadata = {
-  title: 'Privacy Policy · HireMe AI',
-  description: 'How HireMe AI handles your data.',
+  title: 'Privacy Policy · HireMe-AI',
+  description: 'How HireMe-AI collects, uses, and protects your data. We never sell your resume or personal information.',
+  alternates: { canonical: 'https://www.hireme-ai.com/privacy' },
 }
 
 const sections = [
