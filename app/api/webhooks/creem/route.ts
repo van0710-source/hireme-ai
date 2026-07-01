@@ -2,7 +2,7 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import crypto from 'crypto'
-import { supabaseAdmin } from '@/lib/supabase-server'
+import { getSupabaseAdmin } from '@/lib/supabase-server'
 import { addPaymentCredits } from '@/lib/usage'
 import { isValidDeviceId, isValidProductType } from '@/lib/sanitize'
 
@@ -67,7 +67,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Invalid payload fields', received: true })
   }
 
-  const { data: existing, error: checkError } = await supabaseAdmin
+  const { data: existing, error: checkError } = await getSupabaseAdmin()
     .from('creem_events')
     .select('id')
     .eq('payment_id', paymentId)
@@ -83,7 +83,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ received: true, duplicate: true })
   }
 
-  const { error: insertError } = await supabaseAdmin
+  const { error: insertError } = await getSupabaseAdmin()
     .from('creem_events')
     .insert({
       payment_id:   paymentId,

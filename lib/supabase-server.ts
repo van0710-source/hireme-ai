@@ -2,17 +2,19 @@
 // Server-side Supabase client using service role key (bypasses RLS)
 // ONLY use in API routes — never import in client components
 
-import { createClient } from '@supabase/supabase-js'
+import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 
-if (!process.env.NEXT_PUBLIC_SUPABASE_URL) {
-  throw new Error('Missing NEXT_PUBLIC_SUPABASE_URL')
-}
-if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
-  throw new Error('Missing SUPABASE_SERVICE_ROLE_KEY')
-}
+let supabaseAdminClient: SupabaseClient | null = null
 
-export const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY,
-  { auth: { persistSession: false } }
-)
+/** Lazy init so `next build` does not require env vars at module load time. */
+export function getSupabaseAdmin(): SupabaseClient {
+  if (supabaseAdminClient) return supabaseAdminClient
+
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY
+  if (!url) throw new Error('Missing NEXT_PUBLIC_SUPABASE_URL')
+  if (!key) throw new Error('Missing SUPABASE_SERVICE_ROLE_KEY')
+
+  supabaseAdminClient = createClient(url, key, { auth: { persistSession: false } })
+  return supabaseAdminClient
+}

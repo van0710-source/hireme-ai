@@ -3,7 +3,7 @@
 // Returns current user info from session cookie
 
 import { NextRequest, NextResponse } from 'next/server'
-import { supabaseAdmin } from '@/lib/supabase-server'
+import { getSupabaseAdmin } from '@/lib/supabase-server'
 import { getSession } from '@/lib/session'
 
 export const runtime = 'nodejs'
@@ -15,7 +15,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ user: null })
   }
 
-  const { data: user } = await supabaseAdmin
+  const { data: user } = await getSupabaseAdmin()
     .from('users')
     .select('id, email, credits, total_used')
     .eq('id', session.userId)

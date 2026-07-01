@@ -4,7 +4,7 @@
 // Verifies credentials, migrates device credits, sets session cookie
 
 import { NextRequest, NextResponse } from 'next/server'
-import { supabaseAdmin } from '@/lib/supabase-server'
+import { getSupabaseAdmin } from '@/lib/supabase-server'
 import { verifyPassword, createSessionToken, SESSION_COOKIE, SESSION_MAX_AGE } from '@/lib/auth'
 import { sanitizeText } from '@/lib/sanitize'
 import { checkRateLimit, getClientIp } from '@/lib/rate-limit'
@@ -34,7 +34,7 @@ export async function POST(req: NextRequest) {
   }
 
   // Find user
-  const { data: user } = await supabaseAdmin
+  const { data: user } = await getSupabaseAdmin()
     .from('users')
     .select('id, email, password_hash, credits, total_used')
     .eq('email', email)
@@ -54,19 +54,19 @@ export async function POST(req: NextRequest) {
 
   // Migrate device credits if any
   if (typeof deviceId === 'string' && deviceId.length > 0) {
-    const { data: deviceData } = await supabaseAdmin
+    const { data: deviceData } = await getSupabaseAdmin()
       .from('daily_usage')
       .select('credits')
       .eq('device_id', deviceId)
       .maybeSingle()
 
     if (deviceData && deviceData.credits > 0) {
-      await supabaseAdmin
+      await getSupabaseAdmin()
         .from('users')
         .update({ credits: user.credits + deviceData.credits })
         .eq('id', user.id)
 
-      await supabaseAdmin
+      await getSupabaseAdmin()
         .from('daily_usage')
         .update({ credits: 0 })
         .eq('device_id', deviceId)

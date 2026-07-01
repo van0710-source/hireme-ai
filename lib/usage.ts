@@ -1,7 +1,7 @@
 // lib/usage.ts
 // Central helper for reading and updating device usage quota
 
-import { supabaseAdmin } from './supabase-server'
+import { getSupabaseAdmin } from './supabase-server'
 
 export const FREE_USES = 3
 export const CREDITS_PER_PURCHASE = 200
@@ -15,7 +15,7 @@ export interface UsageRecord {
 
 /** Get or create usage record for a device */
 export async function getUsage(deviceId: string): Promise<UsageRecord> {
-  const { data, error } = await supabaseAdmin
+  const { data, error } = await getSupabaseAdmin()
     .from('daily_usage')
     .select('device_id, total_used, credits')
     .eq('device_id', deviceId)
@@ -24,7 +24,7 @@ export async function getUsage(deviceId: string): Promise<UsageRecord> {
   if (error) throw new Error(`DB read error: ${error.message}`)
 
   if (!data) {
-    const { data: created, error: createError } = await supabaseAdmin
+    const { data: created, error: createError } = await getSupabaseAdmin()
       .from('daily_usage')
       .insert({ device_id: deviceId, total_used: 0, credits: 0 })
       .select('device_id, total_used, credits')
@@ -55,12 +55,12 @@ export async function incrementUsage(deviceId: string): Promise<void> {
   const usage = await getUsage(deviceId)
 
   if (usage.total_used < FREE_USES) {
-    await supabaseAdmin
+    await getSupabaseAdmin()
       .from('daily_usage')
       .update({ total_used: usage.total_used + 1 })
       .eq('device_id', deviceId)
   } else if (usage.credits >= CREDITS_PER_USE) {
-    await supabaseAdmin
+    await getSupabaseAdmin()
       .from('daily_usage')
       .update({
         total_used: usage.total_used + 1,
@@ -80,12 +80,12 @@ export async function addPaymentCredits(
   const usage = await getUsage(deviceId)
 
   if (productType === 'single') {
-    await supabaseAdmin
+    await getSupabaseAdmin()
       .from('daily_usage')
       .update({ credits: usage.credits + CREDITS_PER_USE })
       .eq('device_id', deviceId)
   } else {
-    await supabaseAdmin
+    await getSupabaseAdmin()
       .from('daily_usage')
       .update({ credits: usage.credits + CREDITS_PER_PURCHASE })
       .eq('device_id', deviceId)
@@ -94,7 +94,7 @@ export async function addPaymentCredits(
 // ── User account quota (for logged-in users) ──────────────────────────────────
 
 export async function getUserUsage(userId: string): Promise<UsageRecord & { id: string }> {
-  const { data, error } = await supabaseAdmin
+  const { data, error } = await getSupabaseAdmin()
     .from('users')
     .select('id, total_used, credits')
     .eq('id', userId)
@@ -108,12 +108,12 @@ export async function incrementUserUsage(userId: string): Promise<void> {
   const usage = await getUserUsage(userId)
 
   if (usage.total_used < FREE_USES) {
-    await supabaseAdmin
+    await getSupabaseAdmin()
       .from('users')
       .update({ total_used: usage.total_used + 1 })
       .eq('id', userId)
   } else if (usage.credits >= CREDITS_PER_USE) {
-    await supabaseAdmin
+    await getSupabaseAdmin()
       .from('users')
       .update({
         total_used: usage.total_used + 1,

@@ -4,7 +4,7 @@
 // Verifies code, creates user account, migrates device credits, sets session cookie
 
 import { NextRequest, NextResponse } from 'next/server'
-import { supabaseAdmin } from '@/lib/supabase-server'
+import { getSupabaseAdmin } from '@/lib/supabase-server'
 import { hashPassword, createSessionToken, SESSION_COOKIE, SESSION_MAX_AGE } from '@/lib/auth'
 import { sanitizeText } from '@/lib/sanitize'
 
@@ -33,7 +33,7 @@ export async function POST(req: NextRequest) {
   }
 
   // Verify code
-  const { data: codeRecord } = await supabaseAdmin
+  const { data: codeRecord } = await getSupabaseAdmin()
     .from('verification_codes')
     .select('id, code, expires_at, used')
     .eq('email', email)
@@ -55,7 +55,7 @@ export async function POST(req: NextRequest) {
   }
 
   // Mark code as used
-  await supabaseAdmin
+  await getSupabaseAdmin()
     .from('verification_codes')
     .update({ used: true })
     .eq('id', codeRecord.id)
@@ -64,7 +64,7 @@ export async function POST(req: NextRequest) {
   let deviceCredits = 0
   let deviceTotalUsed = 0
   if (typeof deviceId === 'string' && deviceId.length > 0) {
-    const { data: deviceData } = await supabaseAdmin
+    const { data: deviceData } = await getSupabaseAdmin()
       .from('daily_usage')
       .select('credits, total_used')
       .eq('device_id', deviceId)
@@ -77,7 +77,7 @@ export async function POST(req: NextRequest) {
 
   // Create user account
   const passwordHash = hashPassword(password as string)
-  const { data: user, error: createError } = await supabaseAdmin
+  const { data: user, error: createError } = await getSupabaseAdmin()
     .from('users')
     .insert({
       email,
@@ -95,7 +95,7 @@ export async function POST(req: NextRequest) {
 
   // Clear device credits after migration
   if (typeof deviceId === 'string' && deviceId.length > 0) {
-    await supabaseAdmin
+    await getSupabaseAdmin()
       .from('daily_usage')
       .update({ credits: 0 })
       .eq('device_id', deviceId)

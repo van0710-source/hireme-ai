@@ -4,7 +4,7 @@
 // Sends a 6-digit verification code to the email address
 
 import { NextRequest, NextResponse } from 'next/server'
-import { supabaseAdmin } from '@/lib/supabase-server'
+import { getSupabaseAdmin } from '@/lib/supabase-server'
 import { generateVerificationCode } from '@/lib/auth'
 import { sanitizeText } from '@/lib/sanitize'
 import { checkRateLimit, getClientIp } from '@/lib/rate-limit'
@@ -42,7 +42,7 @@ export async function POST(req: NextRequest) {
 
   // Email-level: max 3 verification emails per 10 minutes (uses existing table)
   const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000).toISOString()
-  const { count: recentCount } = await supabaseAdmin
+  const { count: recentCount } = await getSupabaseAdmin()
     .from('verification_codes')
     .select('id', { count: 'exact', head: true })
     .eq('email', email)
@@ -56,7 +56,7 @@ export async function POST(req: NextRequest) {
   }
 
   // Check if email already registered
-  const { data: existing } = await supabaseAdmin
+  const { data: existing } = await getSupabaseAdmin()
     .from('users')
     .select('id')
     .eq('email', email)
@@ -73,7 +73,7 @@ export async function POST(req: NextRequest) {
   const code = generateVerificationCode()
   const expiresAt = new Date(Date.now() + 10 * 60 * 1000).toISOString()
 
-  const { error: insertError } = await supabaseAdmin
+  const { error: insertError } = await getSupabaseAdmin()
     .from('verification_codes')
     .insert({ email, code, expires_at: expiresAt })
 
