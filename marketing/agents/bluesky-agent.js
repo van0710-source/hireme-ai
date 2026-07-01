@@ -10,8 +10,18 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_KEY
 )
 
-const SITE_URL = 'https://hireme-ai.com'
+const SITE_URL = 'https://www.hireme-ai.com'
 const MODE = process.env.BLUESKY_MODE || 'publish' // 'generate' | 'publish'
+
+function requireEnv(name) {
+  if (!process.env[name]) {
+    throw new Error(`Missing required env: ${name}`)
+  }
+}
+
+function assertSupabaseOk(error, context) {
+  if (error) throw new Error(`${context}: ${error.message}`)
+}
 
 // ── 模式A：批量生成本周7条内容 ──
 
@@ -19,13 +29,15 @@ async function generateWeeklyContent() {
   console.log('[bluesky-agent] Generating weekly content batch...')
 
   // 检查队列是否已有足够内容（避免重复生成）
-  const { count } = await supabase
+  const { count, error: countError } = await supabase
     .from('marketing_content_queue')
     .select('*', { count: 'exact', head: true })
     .eq('platform', 'bluesky')
     .eq('status', 'pending')
 
-  if (count >= 5) {
+  assertSupabaseOk(countError, 'Queue count failed')
+
+  if ((count ?? 0) >= 5) {
     console.log(`[bluesky-agent] Queue has ${count} items, skipping generation.`)
     return
   }
@@ -82,7 +94,8 @@ Raw JSON only, no markdown.`
     }
   })
 
-  await supabase.from('marketing_content_queue').insert(inserts)
+  const { error: insertError } = await supabase.from('marketing_content_queue').insert(inserts)
+  assertSupabaseOk(insertError, 'Queue insert failed')
   await recordTokens('bluesky', tokens)
   console.log(`[bluesky-agent] ✅ Generated ${posts.length} posts (${tokens} tokens)`)
 }
@@ -92,7 +105,7 @@ Raw JSON only, no markdown.`
 async function publishNext() {
   console.log('[bluesky-agent] Publishing next queued post...')
 
-  const { data: items } = await supabase
+  const { data: items, error: queryError } = await supabase
     .from('marketing_content_queue')
     .select('*')
     .eq('platform', 'bluesky')
@@ -100,6 +113,8 @@ async function publishNext() {
     .lte('scheduled_at', new Date().toISOString())
     .order('scheduled_at', { ascending: true })
     .limit(1)
+
+  assertSupabaseOk(queryError, 'Queue query failed')
 
   if (!items?.length) {
     console.log('[bluesky-agent] No posts scheduled for now.')
@@ -110,7 +125,10 @@ async function publishNext() {
 
   // 登录 Bluesky
   const session = await blueskyLogin()
-  if (!session) return
+  if (!session) {
+    console.log('[bluesky-agent] Login failed; skipping publish (alert sent).')
+    return
+  }
 
   // 发布
   const postRes = await fetch('https://bsky.social/xrpc/com.atproto.repo.createRecord', {
@@ -203,9 +221,15 @@ async function sendAlert(subject, text) {
 }
 
 async function run() {
+  requireEnv('SUPABASE_URL')
+  requireEnv('SUPABASE_SERVICE_KEY')
+  requireEnv('DEEPSEEK_API_KEY')
+
   if (MODE === 'generate') {
     await generateWeeklyContent()
   } else {
+    requireEnv('BLUESKY_IDENTIFIER')
+    requireEnv('BLUESKY_PASSWORD')
     await publishNext()
   }
 }

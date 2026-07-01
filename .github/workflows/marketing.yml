@@ -8,8 +8,8 @@ on:
     - cron: '0 10 * * 0'
     # Bluesky 发布：每日 UTC 22:00
     - cron: '0 22 * * *'
-    # Reddit 监控：每小时（GitHub Actions 最小粒度）
-    - cron: '0 * * * *'
+    # Reddit 监控：预热期暂停（karma 达标后改 workflow_dispatch 手动测，再恢复 cron）
+    # - cron: '0 * * * *'
     # 互动分析：每3天 UTC 08:00（用周一/周四/周日近似）
     - cron: '0 8 * * 0,3,6'
     # PM 周报：每周一 UTC 09:00
@@ -56,6 +56,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+          cache: 'npm'
+      - run: npm ci
       - run: node blog-agent.js
         working-directory: marketing/agents
 
@@ -72,6 +74,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+          cache: 'npm'
+      - run: npm ci
       - run: BLUESKY_MODE=generate node bluesky-agent.js
         working-directory: marketing/agents
 
@@ -88,6 +92,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+          cache: 'npm'
+      - run: npm ci
       - run: BLUESKY_MODE=publish node bluesky-agent.js
         working-directory: marketing/agents
 
@@ -95,15 +101,14 @@ jobs:
   reddit:
     name: Reddit Monitor & Reply
     runs-on: ubuntu-latest
-    if: |
-      (github.event_name == 'schedule' &&
-       github.event.schedule == '0 * * * *') ||
-      (github.event_name == 'workflow_dispatch' && inputs.agent == 'reddit')
+    if: github.event_name == 'workflow_dispatch' && inputs.agent == 'reddit'
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+          cache: 'npm'
+      - run: npm ci
       # 随机延迟0-30分钟，模拟人类不规律行为
       - name: Random delay
         run: sleep $((RANDOM % 1800))
@@ -123,6 +128,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+          cache: 'npm'
+      - run: npm ci
       - run: node analysis-agent.js
         working-directory: marketing/agents
 
@@ -139,5 +146,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+          cache: 'npm'
+      - run: npm ci
       - run: node pm-agent.js
         working-directory: marketing/agents

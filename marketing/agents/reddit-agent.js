@@ -158,7 +158,21 @@ async function alreadyReplied(postId) {
   return count > 0
 }
 
+function isRedditConfigured() {
+  return Boolean(
+    process.env.REDDIT_CLIENT_ID &&
+    process.env.REDDIT_CLIENT_SECRET &&
+    process.env.REDDIT_USERNAME &&
+    process.env.REDDIT_PASSWORD
+  )
+}
+
 async function run() {
+  if (!isRedditConfigured()) {
+    console.log('[reddit-agent] Skipping: REDDIT_* secrets not configured (manual warmup phase).')
+    return
+  }
+
   console.log('[reddit-agent] Starting monitor run...')
 
   let token
