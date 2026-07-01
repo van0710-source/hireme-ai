@@ -1,10 +1,11 @@
-import { MetadataRoute } from 'next'
+import type { MetadataRoute } from 'next'
+import { getPublishedPosts } from '@/lib/blog'
 
-export default function sitemap(): MetadataRoute.Sitemap {
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const base = 'https://www.hireme-ai.com'
   const now = new Date()
 
-  return [
+  const staticPages: MetadataRoute.Sitemap = [
     {
       url: base,
       lastModified: now,
@@ -30,4 +31,19 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.3,
     },
   ]
+
+  let posts: MetadataRoute.Sitemap = []
+  try {
+    const published = await getPublishedPosts()
+    posts = published.map(post => ({
+      url: `${base}/blog/${post.slug}`,
+      lastModified: new Date(post.published_at),
+      changeFrequency: 'monthly' as const,
+      priority: 0.7,
+    }))
+  } catch {
+    // build-time: no env vars yet — static pages only
+  }
+
+  return [...staticPages, ...posts]
 }

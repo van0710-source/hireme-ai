@@ -1,5 +1,7 @@
 // app/blog/page.tsx
 import type { Metadata } from 'next'
+import Link from 'next/link'
+import { getPublishedPosts } from '@/lib/blog'
 
 export const metadata: Metadata = {
   title: 'Resume & Interview Tips — HireMe-AI Resources',
@@ -8,31 +10,19 @@ export const metadata: Metadata = {
   alternates: { canonical: 'https://www.hireme-ai.com/blog' },
 }
 
-const ARTICLES = [
-  {
-    slug: 'how-ats-works',
-    title: 'How Applicant Tracking Systems actually work',
-    summary:
-      'Most resumes are screened by software before a human ever reads them. Here\'s what ATS systems look for and how to beat them.',
-    date: 'Coming soon',
-  },
-  {
-    slug: 'resume-action-verbs',
-    title: '50 powerful resume action verbs that get results',
-    summary:
-      'Replace weak phrases like "responsible for" with verbs that show impact and initiative.',
-    date: 'Coming soon',
-  },
-  {
-    slug: 'star-interview-method',
-    title: 'The STAR method: answer any behavioral interview question',
-    summary:
-      'Situation, Task, Action, Result — the framework used by top candidates at Google, Amazon, and beyond.',
-    date: 'Coming soon',
-  },
-]
+export const revalidate = 3600
 
-export default function BlogPage() {
+function formatDate(iso: string): string {
+  return new Date(iso).toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  })
+}
+
+export default async function BlogPage() {
+  const posts = await getPublishedPosts()
+
   return (
     <main className="min-h-screen bg-[#FFFBF7]">
       <section className="mx-auto max-w-2xl px-4 pt-14 pb-6">
@@ -44,16 +34,38 @@ export default function BlogPage() {
       </section>
 
       <section className="mx-auto max-w-2xl px-4 pb-20 space-y-5">
-        {ARTICLES.map(article => (
-          <article
-            key={article.slug}
-            className="rounded-2xl bg-white p-6 shadow-sm border border-gray-100"
-          >
-            <p className="text-xs text-gray-400 mb-1">{article.date}</p>
-            <h2 className="text-base font-semibold text-gray-900 mb-1">{article.title}</h2>
-            <p className="text-sm text-gray-500">{article.summary}</p>
-          </article>
-        ))}
+        {posts.length === 0 ? (
+          <p className="text-sm text-gray-500 rounded-2xl bg-white border border-gray-100 p-6">
+            New articles are on the way. Check back soon, or{' '}
+            <Link href="/" className="text-orange-600 hover:underline">
+              try HireMe-AI free
+            </Link>{' '}
+            while you wait.
+          </p>
+        ) : (
+          posts.map(post => (
+            <article
+              key={post.slug}
+              className="rounded-2xl bg-white p-6 shadow-sm border border-gray-100 hover:border-orange-200 transition-colors"
+            >
+              <p className="text-xs text-gray-400 mb-1">{formatDate(post.published_at)}</p>
+              <h2 className="text-base font-semibold text-gray-900 mb-1">
+                <Link href={`/blog/${post.slug}`} className="hover:text-orange-600 transition-colors">
+                  {post.title}
+                </Link>
+              </h2>
+              <p className="text-sm text-gray-500">
+                {post.meta_description ?? 'Read more about resume tailoring and interview prep.'}
+              </p>
+              <Link
+                href={`/blog/${post.slug}`}
+                className="inline-block mt-3 text-sm font-medium text-orange-600 hover:text-orange-700"
+              >
+                Read article →
+              </Link>
+            </article>
+          ))
+        )}
       </section>
     </main>
   )

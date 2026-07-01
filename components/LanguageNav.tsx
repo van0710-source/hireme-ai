@@ -83,6 +83,7 @@ export default function LanguageNav() {
           <div className="hidden md:flex items-center gap-7">
             <a href="#how-it-works" className="text-[13px] text-gray-500 hover:text-gray-800 transition-colors">How it works</a>
             <a href="#what-you-get" className="text-[13px] text-gray-500 hover:text-gray-800 transition-colors">Features</a>
+            <a href="/blog" className="text-[13px] text-gray-500 hover:text-gray-800 transition-colors">Resources</a>
           </div>
 
           {/* Right: auth + hamburger */}
@@ -169,6 +170,7 @@ export default function LanguageNav() {
           <div className="md:hidden border-t border-[#E5E0D8] bg-white px-6 py-4 space-y-1">
             <a href="#how-it-works" onClick={() => setShowMobileMenu(false)} className="block py-2.5 text-[14px] text-gray-700 font-medium">How it works</a>
             <a href="#what-you-get" onClick={() => setShowMobileMenu(false)} className="block py-2.5 text-[14px] text-gray-700 font-medium">Features</a>
+            <a href="/blog" onClick={() => setShowMobileMenu(false)} className="block py-2.5 text-[14px] text-gray-700 font-medium">Resources</a>
             {!user && (
               <>
                 <div className="h-px bg-[#E5E0D8] my-2" />

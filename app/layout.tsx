@@ -3,6 +3,7 @@ import type { Metadata } from 'next'
 import { Plus_Jakarta_Sans } from 'next/font/google'
 import './globals.css'
 import LanguageNav from '@/components/LanguageNav'
+import { homepageFaqJsonLd } from '@/lib/blog'
 
 const jakarta = Plus_Jakarta_Sans({
   subsets: ['latin'],
@@ -79,6 +80,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}
         />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(homepageFaqJsonLd()) }}
+        />
       </head>
       <body className={`${jakarta.className} antialiased min-h-screen flex flex-col`}>
 
@@ -114,6 +119,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               </p>
             </div>
             <div className="flex gap-5">
+              <a href="/blog" className="text-[11px] text-gray-400 hover:text-gray-700 transition-colors">Resources</a>
               <a href="/privacy" className="text-[11px] text-gray-400 hover:text-gray-700 transition-colors">Privacy</a>
               <a href="/terms" className="text-[11px] text-gray-400 hover:text-gray-700 transition-colors">Terms</a>
               <a href="mailto:contact@hireme-ai.com" className="text-[11px] text-gray-400 hover:text-gray-700 transition-colors">Contact</a>

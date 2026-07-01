@@ -10,7 +10,7 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_KEY
 )
 
-const SITE_URL = 'https://hireme-ai-im92-git-claude-experiment-van0710-sources-projects.vercel.app'
+const SITE_URL = 'https://www.hireme-ai.com'
 
 async function generateBlogPost(keyword, language) {
   const isSpanish = language === 'es'

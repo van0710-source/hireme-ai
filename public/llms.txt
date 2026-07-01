@@ -1,0 +1,29 @@
+# HireMe-AI
+
+> AI resume tailoring for specific companies. Free to try, no subscription.
+
+## What this site does
+
+HireMe-AI helps job seekers paste a resume, name a target company, and receive:
+- A tailored resume rewrite
+- ATS keywords
+- Key improvements
+- 10 interview questions
+
+## Key pages
+
+- Home: https://www.hireme-ai.com/
+- Resources (blog): https://www.hireme-ai.com/blog
+- Privacy: https://www.hireme-ai.com/privacy
+- Terms: https://www.hireme-ai.com/terms
+
+## Pricing
+
+- 3 free uses without sign-up
+- $1 per single use
+- $20 credits pack (~$0.08 per use)
+- No subscription
+
+## Contact
+
+contact@hireme-ai.com
