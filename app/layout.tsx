@@ -119,6 +119,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               </p>
             </div>
             <div className="flex gap-5">
+              <a href="/faq" className="text-[11px] text-gray-400 hover:text-gray-700 transition-colors">FAQ</a>
               <a href="/blog" className="text-[11px] text-gray-400 hover:text-gray-700 transition-colors">Resources</a>
               <a href="/privacy" className="text-[11px] text-gray-400 hover:text-gray-700 transition-colors">Privacy</a>
               <a href="/terms" className="text-[11px] text-gray-400 hover:text-gray-700 transition-colors">Terms</a>

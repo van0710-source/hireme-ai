@@ -13,6 +13,7 @@ HireMe-AI helps job seekers paste a resume, name a target company, and receive:
 ## Key pages
 
 - Home: https://www.hireme-ai.com/
+- FAQ (resume tailoring, ATS, interviews): https://www.hireme-ai.com/faq
 - Resources (blog): https://www.hireme-ai.com/blog
 - Privacy: https://www.hireme-ai.com/privacy
 - Terms: https://www.hireme-ai.com/terms

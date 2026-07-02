@@ -1,0 +1,47 @@
+{
+  "week": 1,
+  "period": "2026-07-01 — 2026-07-07",
+  "theme": "简历黑洞 + 公司定向改写",
+  "strategy_note": "SEO 55% / GEO 25% / 社媒 20%。Bluesky 预热：零链接。",
+  "blog": [
+    {
+      "keyword": "how to tailor resume for Google",
+      "angle": "L4/L5 简历不是堆技术栈，是证明 impact 对齐 Google 职级",
+      "anxiety": "被无视",
+      "priority": 1
+    },
+    {
+      "keyword": "why am i not getting interviews",
+      "angle": "52 份同款简历 vs 10 份定向改写——用数字对比",
+      "anxiety": "简历黑洞",
+      "priority": 2
+    },
+    {
+      "keyword": "HireMe AI vs tailoring resume manually",
+      "angle": "GEO 对比型：手动 45 分钟 vs 一次会话四样输出",
+      "anxiety": "白费力气",
+      "priority": 3,
+      "content_type": "comparison"
+    }
+  ],
+  "bluesky": {
+    "angles": [
+      "application count vs reply rate",
+      "same resume sent everywhere",
+      "recruiter ghosting after final round",
+      "subscription fatigue on job tools",
+      "interview prep the night before"
+    ],
+    "link_policy": "zero_links",
+    "week_number": 1
+  },
+  "geo_targets": [
+    "how to tailor resume for a specific company",
+    "best free AI resume tailor no signup",
+    "why am i not getting interviews after applying"
+  ],
+  "reddit_templates": [
+    "When someone posts about no responses: share the 'same resume to 50 companies' insight first, tool only if they ask for tools.",
+    "When someone asks about Google prep: mention company-specific interview questions, not generic lists."
+  ]
+}
