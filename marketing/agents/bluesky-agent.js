@@ -78,12 +78,17 @@ Raw JSON only, no markdown.`
   const parsed = JSON.parse(data.choices[0].message.content)
   const posts = Array.isArray(parsed) ? parsed : parsed.posts ?? []
 
-  // 写入队列，按天排期
+  // 写入队列：第 1 条立即可发，其余按日排期（避免 22:00 cron 与 22:xx 排期竞态）
   const now = new Date()
   const inserts = posts.map((p, i) => {
     const scheduledAt = new Date(now)
-    scheduledAt.setDate(now.getDate() + i)
-    scheduledAt.setHours(22, Math.floor(Math.random() * 30), 0, 0) // UTC 22:00 ±30min
+    if (i === 0) {
+      // 首条：生成后即可被下一次 publish 任务取走
+      scheduledAt.setMinutes(scheduledAt.getMinutes() - 10)
+    } else {
+      scheduledAt.setDate(now.getDate() + i)
+      scheduledAt.setUTCHours(22, 0, 0, 0)
+    }
     return {
       platform: 'bluesky',
       content: p.include_link ? `${p.content}\n\n${SITE_URL}` : p.content,
@@ -117,7 +122,12 @@ async function publishNext() {
   assertSupabaseOk(queryError, 'Queue query failed')
 
   if (!items?.length) {
-    console.log('[bluesky-agent] No posts scheduled for now.')
+    const { count } = await supabase
+      .from('marketing_content_queue')
+      .select('*', { count: 'exact', head: true })
+      .eq('platform', 'bluesky')
+      .eq('status', 'pending')
+    console.log(`[bluesky-agent] No posts scheduled for now. (${count ?? 0} pending in queue)`)
     return
   }
 
